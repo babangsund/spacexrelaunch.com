@@ -164,13 +164,17 @@ const LaunchPage: NextPage<LaunchPageProps> = ({ launch }) => {
     if (hasLaunched) {
       setIsLaunchPlaying((p) => !p);
     } else {
-      setIsLaunching(true);
       toggleIsMusicPlaying();
+      requestAnimationFrame(() => {
+        setIsLaunching(true);
+      });
 
       setTimeout(() => {
-        setHasLaunched(true);
-        setIsLaunchPlaying((p) => !p);
-      }, 1000);
+        requestAnimationFrame(() => {
+          setHasLaunched(true);
+          setIsLaunchPlaying((p) => !p);
+        });
+      }, 500);
     }
   }, [hasLaunched, toggleIsMusicPlaying]);
 
@@ -193,24 +197,19 @@ const LaunchPage: NextPage<LaunchPageProps> = ({ launch }) => {
 
       <Header />
 
-      <div className={styles.controls}>
-        {hasLaunched && (
-          <>
-            <SoundBars
-              isPlaying={isMusicPlaying}
-              onToggle={toggleIsMusicPlaying}
-            />
-            <Play
-              isPlaying={isLaunchPlaying}
-              onChange={() => setIsLaunchPlaying((p) => !p)}
-            />
-            <PlaybackRate rate={playbackRate} onChange={togglePlaybackRate} />
-          </>
-        )}
+      <div
+        className={`${styles.controls} ${!isLaunching ? styles.hidden : ""}`}
+      >
+        <SoundBars isPlaying={isMusicPlaying} onToggle={toggleIsMusicPlaying} />
+        <Play
+          isPlaying={isLaunchPlaying}
+          onChange={() => setIsLaunchPlaying((p) => !p)}
+        />
+        <PlaybackRate rate={playbackRate} onChange={togglePlaybackRate} />
       </div>
 
       {!hasLaunched && (
-        <div className={`${styles.enter} ${isLaunching ? styles.leave : ""}`}>
+        <div className={`${styles.enter} ${isLaunching ? styles.hidden : ""}`}>
           <Play
             className={styles.start}
             isPlaying={isLaunchPlaying}

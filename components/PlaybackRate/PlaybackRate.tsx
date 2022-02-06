@@ -24,8 +24,8 @@ const playbackRates = [1, 2, 3, 5, 10, 50, 100];
 const playbackRatesLength = playbackRates.length;
 
 export function usePlaybackRate(): [number, () => void] {
-  const index = React.useRef(0);
-  const [playbackRate, setPlaybackRate] = React.useState(1);
+  const index = React.useRef(4);
+  const [playbackRate, setPlaybackRate] = React.useState(10);
   return [
     playbackRate,
     React.useCallback(() => {
