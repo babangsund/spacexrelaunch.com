@@ -15,6 +15,10 @@
   opacity: 0;
 }
 
+.hidden.controls {
+  opacity: 0;
+}
+
 .controls {
   will-change: opacity;
   transition: opacity 500ms;

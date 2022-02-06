@@ -5,28 +5,37 @@
   }
   100% {
     opacity: 1;
-    height: 40px;
+    height: 25px;
   }
 }
 
-.bars {
+.button {
+  border-radius: 8px;
+  border: 2px solid #fff;
+
   margin: 0;
   padding: 0;
   z-index: 2;
   width: 40px;
   height: 40px;
-  border: none;
   cursor: pointer;
   position: relative;
   background-color: transparent;
 }
 
-.bars[data-playing="false"] .bar {
+.button[data-playing="false"] .bar {
   animation: none;
 }
 
+.bars {
+  width: 25px;
+  height: 25px;
+  margin: auto;
+  position: relative;
+}
+
 .bar {
-  width: 7px;
+  width: 4px;
   bottom: 0px;
   height: 3px;
   background: #fff;
@@ -40,18 +49,18 @@
   animation-duration: 642ms;
 }
 .bar:nth-child(2) {
-  left: 8px;
+  left: 5px;
   animation-duration: 665ms;
 }
 .bar:nth-child(3) {
-  left: 16px;
+  left: 10px;
   animation-duration: 636ms;
 }
 .bar:nth-child(4) {
-  left: 24px;
+  left: 15px;
   animation-duration: 698ms;
 }
 .bar:nth-child(5) {
-  left: 32px;
+  left: 20px;
   animation-duration: 603ms;
 }

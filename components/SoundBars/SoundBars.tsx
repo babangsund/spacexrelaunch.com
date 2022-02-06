@@ -12,15 +12,17 @@ export default function SoundBars({ onToggle, isPlaying }: SoundBarsProps) {
   return (
     <button
       type="button"
-      className={styles.bars}
       data-playing={isPlaying}
+      className={styles.button}
       onClick={() => onToggle()}
     >
-      <div className={styles.bar} />
-      <div className={styles.bar} />
-      <div className={styles.bar} />
-      <div className={styles.bar} />
-      <div className={styles.bar} />
+      <div className={styles.bars}>
+        <div className={styles.bar} />
+        <div className={styles.bar} />
+        <div className={styles.bar} />
+        <div className={styles.bar} />
+        <div className={styles.bar} />
+      </div>
     </button>
   );
 }
