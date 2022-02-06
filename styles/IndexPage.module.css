@@ -1,0 +1,207 @@
+@font-face {
+  font-family: D-DIN;
+  font-weight: 400;
+  src: url(/fonts/D-DIN/D-DIN.woff2) format("woff2"),
+    url(/fonts/D-DIN/D-DIN.woff) format("woff");
+}
+@font-face {
+  font-family: D-DIN;
+  font-weight: 700;
+  src: url(/fonts/D-DIN/D-DIN-Bold.woff2) format("woff2"),
+    url(/fonts/D-DIN/D-DIN-Bold.woff) format("woff");
+}
+
+.main {
+  background-color: #000;
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+  margin: 0 auto;
+  position: relative;
+
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  overflow: auto;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url("/images/stars.png");
+}
+
+.launches {
+  margin: 0;
+  list-style-type: none;
+
+  margin: 0 auto;
+  position: absolute;
+  padding: 0;
+  width: 0;
+  height: 0;
+  /* 26px is the height of an LI */
+  /* 100px is half the width of an LI */
+  transform: translate(-100px, -26px);
+}
+
+.container {
+  margin: 0 auto;
+  position: relative;
+
+  width: 0;
+  height: 0;
+}
+
+.inner {
+  margin: auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(65vh);
+  height: calc(65vh);
+  transform: translate(-50%, -50%);
+}
+
+.outer {
+  margin: auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(90vh);
+  height: calc(90vh);
+}
+
+.background {
+  top: 50%;
+  left: 50%;
+  width: 50vh;
+  margin: auto;
+  height: 50vh;
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+
+  background-position: center;
+  background-size: cover;
+  transition-property: background-image;
+  transition-delay: 300ms;
+}
+
+.shadow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 50vh;
+  height: 50vh;
+  border-radius: 50%;
+
+  background-color: #000;
+  opacity: 0.5;
+  border: 1px solid #fff;
+}
+
+.images {
+  width: 0px;
+  height: 0px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.hr {
+  border: none;
+  position: absolute;
+  height: 1px;
+  width: 5vh; /* 50px */
+  background-color: #fff;
+  opacity: 0.3;
+
+  transform: rotate(90deg) translate(calc(50vh - 3.5vh), 2.5vh) rotate(0deg);
+}
+
+.button {
+  font-size: 40px;
+  border: 1px solid #fff;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 400;
+  padding: 15px 20px;
+
+  margin: auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+
+.launch {
+  margin: 0;
+  list-style: none;
+  font-weight: 500;
+  font-size: 24px;
+  margin-bottom: 100px;
+  text-transform: uppercase;
+
+  cursor: pointer;
+  transition-property: opacity, font-weight;
+  transition-delay: 300ms;
+  width: 200px;
+  font-size: 26px;
+  opacity: 0.3;
+  font-weight: 400;
+  text-align: right;
+  position: absolute;
+  white-space: nowrap;
+}
+
+.launch[data-selected="true"] {
+  opacity: 1;
+  font-weight: 700;
+}
+
+.selection {
+  position: relative;
+}
+
+.stats > div {
+  width: 100px;
+  position: absolute;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.stats > div > * {
+  margin: 0;
+}
+
+.stats h2 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.stats p {
+  font-weight: 500;
+}
+
+.stats small {
+  font-weight: 300;
+}
+
+.dotContainer {
+  position: absolute;
+  transform: translate(-5px, -5px);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  will-change: transform;
+  background-color: #fff;
+  transition: transform 300ms;
+}

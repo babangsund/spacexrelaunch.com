@@ -1,0 +1,57 @@
+@keyframes bounce {
+  0% {
+    opacity: 0.3;
+    height: 3px;
+  }
+  100% {
+    opacity: 1;
+    height: 40px;
+  }
+}
+
+.bars {
+  margin: 0;
+  padding: 0;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  background-color: transparent;
+}
+
+.bars[data-playing="false"] .bar {
+  animation: none;
+}
+
+.bar {
+  width: 7px;
+  bottom: 0px;
+  height: 3px;
+  background: #fff;
+  position: absolute;
+  will-change: height, opacity;
+  animation: bounce 600ms ease infinite alternate;
+}
+
+.bar:nth-child(1) {
+  left: 0;
+  animation-duration: 642ms;
+}
+.bar:nth-child(2) {
+  left: 8px;
+  animation-duration: 665ms;
+}
+.bar:nth-child(3) {
+  left: 16px;
+  animation-duration: 636ms;
+}
+.bar:nth-child(4) {
+  left: 24px;
+  animation-duration: 698ms;
+}
+.bar:nth-child(5) {
+  left: 32px;
+  animation-duration: 603ms;
+}

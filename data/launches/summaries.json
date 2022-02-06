@@ -1,0 +1,46 @@
+[
+  {
+    "name": "CSG-2",
+    "img": "/images/launches/CSG-2.png",
+    "stats": {
+      "speed": 32222,
+      "altitude": 620,
+      "site": "LC-39",
+      "timeZone": "America/New_York",
+      "liftoff": "2022-01-31T11:11:00.000Z"
+    }
+  },
+  {
+    "name": "Starlink 4-6",
+    "img": "/images/launches/Starlink-4-6.png",
+    "stats": {
+      "speed": 18520,
+      "altitude": 255,
+      "site": "LC-39",
+      "timeZone": "America/New_York",
+      "liftoff": "2022-01-18T14:02:00.000Z"
+    }
+  },
+  {
+    "name": "Transporter-3",
+    "img": "/images/launches/Transporter-3.png",
+    "stats": {
+      "speed": 28360,
+      "altitude": 548,
+      "site": "SLC-40",
+      "timeZone": "America/New_York",
+      "liftoff": "2022-01-13T15:25:00.000Z"
+    }
+  },
+  {
+    "name": "Starlink 4-5",
+    "img": "/images/launches/Starlink-4-5.png",
+    "stats": {
+      "speed": 19900,
+      "altitude": 400,
+      "site": "LC-39",
+      "timeZone": "America/New_York",
+      "liftoff": "2022-01-06T09:49:00.000Z"
+    }
+  }
+]

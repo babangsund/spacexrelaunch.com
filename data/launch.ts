@@ -1,0 +1,51 @@
+type Timestamp = string | Date;
+
+interface LaunchStats {
+  site: string;
+  speed: number;
+  altitude: number;
+  liftoff: string;
+  timeZone: string;
+}
+
+export interface LaunchSummary {
+  img: string;
+  name: string;
+  stats: LaunchStats;
+}
+
+interface LaunchTelemetry<TDate extends Timestamp> {
+  time: TDate;
+  speed: number;
+  altitude: number;
+  position: [number, number];
+}
+
+interface LaunchEvent<TDate extends Timestamp> {
+  time: TDate;
+  title: string;
+}
+
+export interface LaunchData<TDate extends Timestamp> {
+  liftoffTime: TDate;
+  events: LaunchEvent<TDate>[];
+  telemetry: LaunchTelemetry<TDate>[];
+}
+
+export interface LaunchWithData<TDate extends Timestamp> extends LaunchSummary {
+  data: LaunchData<TDate>;
+}
+
+export function getLaunch(launchName: string): LaunchWithData<string> {
+  const launch = getLaunches().find((l) => l.name === launchName)!;
+  return {
+    ...launch,
+    data: require(`./launches/telemetry/${launchName
+      .toLowerCase()
+      .replace(" ", "_")}.json`),
+  };
+}
+
+export function getLaunches(): LaunchSummary[] {
+  return require("./launches/summaries.json");
+}

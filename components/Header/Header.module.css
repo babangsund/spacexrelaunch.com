@@ -1,0 +1,9 @@
+.header {
+  z-index: 3;
+  padding: 20px;
+  position: absolute;
+}
+
+.logo {
+  cursor: pointer;
+}
