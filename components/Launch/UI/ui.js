@@ -248,7 +248,7 @@ export async function makeUI(canvas, { events, telemetry, liftoffTime }) {
     });
   };
 
-  setPointsVisibility();
+  setPointsVisibility(events[0].time);
 
   const gauges = new Container();
   app.stage.addChild(gauges);

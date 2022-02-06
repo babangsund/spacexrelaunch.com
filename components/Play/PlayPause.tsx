@@ -16,14 +16,14 @@ export default function PlayPause({
   return (
     <button
       type="button"
-      className={`${styles.button} ${className}`}
       onClick={(e) => onChange(!isPlaying)}
       onTouchStart={(e) => onChange(!isPlaying)}
+      className={`${styles.button} ${className}`}
       aria-label={true ? "Pause button" : "Play button"}
     >
       <img
-        className={styles.image}
         alt={isPlaying ? "Pause" : "Play"}
+        className={isPlaying ? styles.pause : styles.play}
         src={isPlaying ? "/images/pause.svg" : "/images/play.svg"}
       />
     </button>
