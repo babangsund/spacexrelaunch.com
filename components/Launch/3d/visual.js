@@ -1,31 +1,34 @@
 import { geoInterpolate } from "d3-geo";
 import { interpolateNumber } from "d3-interpolate";
 import {
-  AdditiveBlending,
-  BoxGeometry,
-  SphereBufferGeometry,
-  SpriteMaterial,
-  UniformsLib,
-  MeshStandardMaterial,
-  Sprite,
-  Cache,
-  TextureLoader,
-  SpotLight,
   Line,
+  Mesh,
+  Cache,
   Scene,
+  Sprite,
+  Vector3,
+  BackSide,
+  SpotLight,
+  NeverDepth,
+  BoxGeometry,
+  UniformsLib,
   TubeGeometry,
   AmbientLight,
-  CatmullRomCurve3,
+  TextureLoader,
+  WebGLRenderer,
+  SpriteMaterial,
   LoadingManager,
   SphereGeometry,
   ShaderMaterial,
-  Mesh,
-  BackSide,
-  Vector3,
+  AdditiveBlending,
+  CatmullRomCurve3,
   PerspectiveCamera,
-  WebGLRenderer,
   MeshBasicMaterial,
+  SphereBufferGeometry,
+  MeshStandardMaterial,
 } from "three";
+
+import * as THREE from "three";
 
 const atmosphereVertexShader = `
 varying vec3 vertexNormal;
@@ -142,10 +145,10 @@ function addAtmosphere(scene, sphereGeometry, position = {}, rotation = {}) {
     side: BackSide,
     transparent: true,
     uniforms: UniformsLib.lights,
-    lights: true,
+    depthFunc: NeverDepth,
   });
   const atmosphere = new Mesh(sphereGeometry, material);
-  atmosphere.scale.set(0.9, 0.9, 0.9);
+  atmosphere.scale.set(0.91, 0.91, 0.91);
 
   Object.entries(position).forEach(([key, value]) => {
     atmosphere.position[key] = value;
@@ -162,6 +165,8 @@ async function addRocketStage(scene, loader, stage) {
   const rocketStage = new Sprite(
     new SpriteMaterial({
       map: await loader.loadAsync(`/images/stage-${stage}.png`),
+      color: 0xffffff,
+      depthWrite: false,
     })
   );
 
@@ -335,7 +340,7 @@ export async function makeVisual(canvas, launch, altitudeScale) {
   addAtmosphere(
     scene,
     sphereGeometry,
-    getPositionAroundCircle(2.7, launch.liftoffTime)
+    getPositionAroundCircle(3, launch.liftoffTime)
   );
 
   // Light
@@ -384,7 +389,7 @@ export async function makeVisual(canvas, launch, altitudeScale) {
       getPosition(
         lat,
         lon,
-        100 + scaledAltitude + 0.85 // 0.75 is arbitrary. Aims to place the sprite above the line.
+        100 + scaledAltitude + 0.75 // 0.75 is arbitrary. Aims to place the sprite above the line.
       )
     );
 
