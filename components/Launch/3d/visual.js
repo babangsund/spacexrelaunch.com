@@ -346,7 +346,13 @@ export async function makeVisual(canvas, launch, altitudeScale) {
 
   addPath(scene, launch, altitudeScale);
 
-  const rocketStage = await addRocketStage(scene, loader, 2, 0, 0);
+  const stage1 = await addRocketStage(scene, loader, 1, 0, 0);
+  const stage2 = await addRocketStage(scene, loader, 2, 0, 0);
+
+  const rocketStages = {
+    1: stage1,
+    2: stage2,
+  };
 
   const dolly = addDolly(scene, camera);
 
@@ -371,14 +377,14 @@ export async function makeVisual(canvas, launch, altitudeScale) {
     requestAnimationFrame(render);
   }
 
-  function update({ position: [lat, lon], altitude }) {
+  function update({ position: [lat, lon], altitude, stage }) {
     const scaledAltitude = altitudeScale(altitude);
 
-    rocketStage.position.copy(
+    rocketStages[stage].position.copy(
       getPosition(
         lat,
         lon,
-        100 + scaledAltitude + 0.75 // 0.75 is arbitrary. Aims to place the sprite above the line.
+        100 + scaledAltitude + 0.85 // 0.75 is arbitrary. Aims to place the sprite above the line.
       )
     );
 
@@ -387,6 +393,7 @@ export async function makeVisual(canvas, launch, altitudeScale) {
   }
 
   update({
+    stage: 1,
     altitude: 0,
     position: launch.telemetry[0].position,
   });

@@ -22,8 +22,8 @@ export default function PlayPause({
       aria-label={true ? "Pause button" : "Play button"}
     >
       <img
-        alt={isPlaying ? "Pause" : "Play"}
         className={styles.image}
+        alt={isPlaying ? "Pause" : "Play"}
         src={isPlaying ? "/images/pause.svg" : "/images/play.svg"}
       />
     </button>

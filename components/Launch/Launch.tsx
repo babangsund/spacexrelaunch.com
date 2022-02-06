@@ -53,6 +53,8 @@ const Launch = React.memo(function Launch({
 
   const start = React.useCallback(() => {
     const delay = 25;
+    const mECOTime = launch.events.find((e) => e.title === "MECO").time;
+
     interval.current = setInterval(() => {
       const newDate = new Date(date.current.getTime() + 25 * playbackRate);
 
@@ -99,8 +101,10 @@ const Launch = React.memo(function Launch({
       const altitude = interpolators.current.altitude(delta);
       const speed = Math.round(interpolators.current.speed(delta));
       const position = interpolators.current.position(delta);
+      const stage = date.current > mECOTime ? 2 : 1;
 
       onVisualChange.current({
+        stage,
         date: date.current,
         speed,
         altitude,
