@@ -148,7 +148,7 @@ function addAtmosphere(scene, sphereGeometry, position = {}, rotation = {}) {
     depthFunc: NeverDepth,
   });
   const atmosphere = new Mesh(sphereGeometry, material);
-  atmosphere.scale.set(0.91, 0.91, 0.91);
+  atmosphere.scale.set(0.908, 0.907, 0.907);
 
   Object.entries(position).forEach(([key, value]) => {
     atmosphere.position[key] = value;
