@@ -23,7 +23,7 @@ export default function PlayPause({
     >
       <img
         alt={isPlaying ? "Pause" : "Play"}
-        className={isPlaying ? styles.pause : styles.play}
+        className={styles.image}
         src={isPlaying ? "/images/pause.svg" : "/images/play.svg"}
       />
     </button>

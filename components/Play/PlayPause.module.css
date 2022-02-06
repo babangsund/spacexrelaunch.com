@@ -10,14 +10,7 @@
   justify-content: center;
 }
 
-.play {
-  /* width: 19px; */
-  width: 100%;
-  height: 25px;
-}
-
-.pause {
-  /* width: 17px; */
+.image {
   width: 100%;
   height: 25px;
 }
