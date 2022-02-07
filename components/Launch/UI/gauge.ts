@@ -81,13 +81,13 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
 
   return {
     gauge,
-    onUpdate: ({ value }: { value: number }) => {
+    onUpdate: ({ value }: { value: string | number }) => {
       gaugeValue.clear();
 
       gaugeValueText.text = String(value);
       gaugeValueText.x = radius - gaugeValueText.width / 2;
       gaugeValueText.y = radius - gaugeValueText.height / 2;
-      createGauge(gaugeValue, radius, getSections(value), 10);
+      createGauge(gaugeValue, radius, getSections(Number(value)), 10);
     },
   };
 }

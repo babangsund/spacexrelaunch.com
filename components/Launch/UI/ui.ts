@@ -349,7 +349,7 @@ export async function makeUI(
     countdown.text = getCountdown(liftoffTime, date);
     setPointsVisibility(date);
     onUpdateSpeedGauge({ value: speed });
-    onUpdateAltGauge({ value: Number(altitude) });
+    onUpdateAltGauge({ value: altitude });
   };
 
   return updateUI;
