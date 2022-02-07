@@ -19,6 +19,7 @@ import styles from "../styles/LaunchPage.module.css";
 import PlaybackRate, {
   usePlaybackRate,
 } from "../components/PlaybackRate/PlaybackRate";
+import { startPageTransition } from "../components/transitionPage";
 
 interface LaunchPageProps {
   launch: LaunchWithData<string>;

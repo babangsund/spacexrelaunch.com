@@ -16,8 +16,9 @@ export async function startPageTransition() {
 
 export async function endPageTransition() {
   return new Promise<void>((resolve) => {
+    // Start fading out
     document.body.classList.add("end");
-
+    // Remove the overlay
     setTimeout(() => {
       requestAnimationFrame(() => {
         document.body.classList.remove("transition", "start", "end");

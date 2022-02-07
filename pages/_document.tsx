@@ -4,7 +4,7 @@ export default function Document() {
   return (
     <Html>
       <Head />
-      <body className="transition">
+      <body className="transition start">
         <Main />
         <NextScript />
       </body>
