@@ -129,7 +129,26 @@ export async function makeUI(
 
   timeline.addChild(foreGround);
 
-  // Inner wheels
+  // Outer gradient shadow
+  const outerShadow = Sprite.from("/images/outer-shadow.png");
+  outerShadow.anchor.set(0.5);
+  outerShadow.width = radius * 2 + 100;
+  outerShadow.height = radius * 2 + 100;
+  outerShadow.x = app.screen.width / 2;
+  outerShadow.y = app.screen.height - 150;
+  timeline.addChild(outerShadow);
+
+  // Inner solid shadow
+  const innerShadow = new Graphics();
+  innerShadow.beginFill(0x000000);
+  innerShadow.drawCircle(0, 0, radius - 50);
+  innerShadow.endFill();
+  innerShadow.alpha = 0.4;
+  innerShadow.x = app.screen.width / 2;
+  innerShadow.y = app.screen.height - 150;
+  timeline.addChild(innerShadow);
+
+  // Inner wheel
   const innerWheel = new Graphics();
   innerWheel.lineStyle(2, 0xffffff);
   innerWheel.drawCircle(0, 0, radius - 50);
@@ -139,24 +158,7 @@ export async function makeUI(
   innerWheel.y = app.screen.height - 150;
   timeline.addChild(innerWheel);
 
-  const outerShadow = Sprite.from("/images/outer-shadow.png");
-  outerShadow.anchor.set(0.5);
-  outerShadow.width = radius * 2 + 100;
-  outerShadow.height = radius * 2 + 100;
-  outerShadow.x = app.screen.width / 2;
-  outerShadow.y = app.screen.height - 150;
-  timeline.addChild(outerShadow);
-
-  const innerShadow = new Graphics();
-  innerShadow.beginFill(0x000000);
-  innerShadow.drawCircle(0, 0, radius - 50);
-  innerShadow.endFill();
-  innerShadow.alpha = 0.4;
-  innerShadow.x = app.screen.width / 2;
-  innerShadow.y = app.screen.height - 150;
-  timeline.addChild(innerShadow);
-  // End
-
+  // Wheel
   const wheel = new Graphics();
   const wheelOffset = -90;
   wheel.angle = wheelOffset;
@@ -166,14 +168,13 @@ export async function makeUI(
   timeline.addChild(wheel);
 
   const eventsEnd = events[events.length - 1].time;
-
   const totalSeconds = differenceInSeconds(eventsEnd, liftoffTime);
 
   const wheelPoints: {
-    cpContainer: Container;
     time: Date;
     title: string;
     passed?: boolean;
+    cpContainer: Container;
   }[] = [];
 
   events.forEach((cp, index) => {

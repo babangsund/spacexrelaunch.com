@@ -16,7 +16,7 @@ export interface LaunchSummary {
   stats: LaunchStats;
 }
 
-interface LaunchTelemetry<TDate extends Timestamp> {
+export interface LaunchTelemetry<TDate extends Timestamp> {
   time: TDate;
   speed: number;
   altitude: number;

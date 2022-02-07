@@ -1,5 +1,6 @@
 import { geoInterpolate } from "d3-geo";
 import { interpolateNumber } from "d3-interpolate";
+import { ScaleLinear } from "d3-scale";
 import {
   Line,
   Mesh,
@@ -26,9 +27,23 @@ import {
   MeshBasicMaterial,
   SphereBufferGeometry,
   MeshStandardMaterial,
+  Renderer,
+  Loader,
+  Texture,
+  Camera,
 } from "three";
+import {
+  LaunchData,
+  LaunchTelemetry,
+  LaunchWithData,
+  Position,
+} from "../../../data/launch";
 
-import * as THREE from "three";
+export type UpdateVisual = (data: {
+  stage: 1 | 2;
+  altitude: number;
+  position: Position;
+}) => void;
 
 const atmosphereVertexShader = `
 varying vec3 vertexNormal;
@@ -52,7 +67,11 @@ void main() {
 
 const radius = 100;
 
-function createRenderer(width, height, canvas) {
+function createRenderer(
+  width: number,
+  height: number,
+  canvas: HTMLCanvasElement
+) {
   // Rcetina displays have such a high pixel density there is very little visual difference between having AA on/off.
   const antialias = window.devicePixelRatio > 1 ? false : true;
 
@@ -78,8 +97,8 @@ function createCamera() {
   return camera;
 }
 
-function doesNeedResize(renderer) {
-  const canvas = renderer.domElement || renderer.view;
+function doesNeedResize(renderer: Renderer) {
+  const canvas = renderer.domElement;
   const width = window.innerWidth;
   const height = window.innerHeight;
   const needResize =
@@ -88,7 +107,7 @@ function doesNeedResize(renderer) {
   return needResize;
 }
 
-function getPosition(lat, lon, radius) {
+function getPosition(lat: number, lon: number, radius: number) {
   const phi = (90 - lat) * (Math.PI / 180);
   const theta = (lon + 180) * (Math.PI / 180);
 
@@ -99,7 +118,7 @@ function getPosition(lat, lon, radius) {
   return new Vector3(x, y, z);
 }
 
-async function addSkybox(scene, loader) {
+async function addSkybox(scene: Scene, loader: TextureLoader) {
   const materialArray = [];
   const texture_ft = await loader.loadAsync("/images/skybox-stars-dark/nz.png");
   const texture_bk = await loader.loadAsync("/images/skybox-stars-dark/pz.png");
@@ -126,7 +145,11 @@ async function addSkybox(scene, loader) {
   return skybox;
 }
 
-async function addEarth(scene, loader, sphereGeometry) {
+async function addEarth(
+  scene: Scene,
+  loader: TextureLoader,
+  sphereGeometry: SphereGeometry
+) {
   const earthMaterial = new MeshStandardMaterial({
     map: await loader.loadAsync("/images/earth-spacex.png"),
     color: 0x191919,
@@ -137,7 +160,13 @@ async function addEarth(scene, loader, sphereGeometry) {
   return earth;
 }
 
-function addAtmosphere(scene, sphereGeometry, position = {}, rotation = {}) {
+type PositionKey = "x" | "y" | "z";
+
+function addAtmosphere(
+  scene: Scene,
+  sphereGeometry: SphereGeometry,
+  position: Partial<Record<PositionKey, number>> = {}
+) {
   const material = new ShaderMaterial({
     vertexShader: atmosphereVertexShader,
     fragmentShader: atmosphereFragmentShader,
@@ -151,17 +180,18 @@ function addAtmosphere(scene, sphereGeometry, position = {}, rotation = {}) {
   atmosphere.scale.set(0.908, 0.907, 0.907);
 
   Object.entries(position).forEach(([key, value]) => {
-    atmosphere.position[key] = value;
-  });
-  Object.entries(rotation).forEach(([key, value]) => {
-    atmosphere.rotation[key] = value;
+    atmosphere.position[key as PositionKey] = value;
   });
 
   scene.add(atmosphere);
   return atmosphere;
 }
 
-async function addRocketStage(scene, loader, stage) {
+async function addRocketStage(
+  scene: Scene,
+  loader: TextureLoader,
+  stage: 1 | 2
+) {
   const rocketStage = new Sprite(
     new SpriteMaterial({
       map: await loader.loadAsync(`/images/stage-${stage}.png`),
@@ -170,15 +200,10 @@ async function addRocketStage(scene, loader, stage) {
     })
   );
 
-  loader
-    .loadAsync(`/images/stage-${stage}.png`, function (texture) {
-      const { width, height } = texture.image;
-      rocketStage.scale.set(width / 40, height / 40, 0);
-    })
-    .then((texture) => {
-      const { width, height } = texture.image;
-      rocketStage.scale.set(width / 40, height / 40, 0);
-    });
+  loader.loadAsync(`/images/stage-${stage}.png`).then((texture) => {
+    const { width, height } = texture.image;
+    rocketStage.scale.set(width / 40, height / 40, 0);
+  });
 
   scene.add(rocketStage);
 
@@ -192,7 +217,7 @@ async function addRocketStage(scene, loader, stage) {
  * @param {Camera instance} camera Camera to attach to the dolly
  * @returns 3DObject Dolly
  */
-function addDolly(scene, camera) {
+function addDolly(scene: Scene, camera: PerspectiveCamera) {
   const material = new MeshBasicMaterial();
 
   const dolly = new Mesh(new SphereGeometry(0, 0, 0), material);
@@ -245,8 +270,11 @@ function createTextureLoader() {
   return new TextureLoader(manager);
 }
 
-function createLinearInterpolationPath(telemetry, altitudeScale) {
-  const points = [];
+function createLinearInterpolationPath(
+  telemetry: LaunchTelemetry<Date>[],
+  altitudeScale: ScaleLinear<number, number>
+) {
+  const points: Vector3[] = [];
 
   telemetry.forEach(({ position: [lat, lon], altitude }, index) => {
     const nextTelemetry = telemetry[index + 1];
@@ -274,7 +302,7 @@ function createLinearInterpolationPath(telemetry, altitudeScale) {
   return new CatmullRomCurve3(points);
 }
 
-function addLights(scene, liftoffTime) {
+function addLights(scene: Scene, liftoffTime: Date) {
   const light = new SpotLight(0xffffff, 10, 1500);
   const { x, z } = getPositionAroundCircle(250, liftoffTime);
   light.position.set(x, 0, z);
@@ -284,7 +312,11 @@ function addLights(scene, liftoffTime) {
   return light;
 }
 
-function addPath(scene, launch, altitudeScale) {
+function addPath(
+  scene: Scene,
+  launch: LaunchData<Date>,
+  altitudeScale: ScaleLinear<number, number>
+) {
   const path = new Line(
     new TubeGeometry(
       createLinearInterpolationPath(launch.telemetry, altitudeScale),
@@ -293,14 +325,21 @@ function addPath(scene, launch, altitudeScale) {
       8,
       false
     ),
-    new MeshBasicMaterial({ color: 0x9b9ea2 })
+    new MeshBasicMaterial({
+      color: 0x9b9ea2,
+      depthWrite: false,
+    })
   );
 
   scene.add(path);
   return path;
 }
 
-export async function makeVisual(canvas, launch, altitudeScale) {
+export async function makeVisual(
+  canvas: HTMLCanvasElement,
+  launch: LaunchData<Date>,
+  altitudeScale: ScaleLinear<number, number>
+) {
   const renderer = createRenderer(
     window.innerWidth,
     window.innerHeight,
@@ -351,8 +390,8 @@ export async function makeVisual(canvas, launch, altitudeScale) {
 
   addPath(scene, launch, altitudeScale);
 
-  const stage1 = await addRocketStage(scene, loader, 1, 0, 0);
-  const stage2 = await addRocketStage(scene, loader, 2, 0, 0);
+  const stage1 = await addRocketStage(scene, loader, 1);
+  const stage2 = await addRocketStage(scene, loader, 2);
 
   const rocketStages = {
     1: stage1,
@@ -371,7 +410,7 @@ export async function makeVisual(canvas, launch, altitudeScale) {
   }, 1000 * 60); // Every minute
 
   function render() {
-    if (doesNeedResize(renderer, window.innerWidth, window.innerHeight)) {
+    if (doesNeedResize(renderer)) {
       renderer.setSize(window.innerWidth, window.innerHeight);
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -382,20 +421,20 @@ export async function makeVisual(canvas, launch, altitudeScale) {
     requestAnimationFrame(render);
   }
 
-  function update({ position: [lat, lon], altitude, stage }) {
+  const update: UpdateVisual = ({ position: [lat, lon], altitude, stage }) => {
     const scaledAltitude = altitudeScale(altitude);
 
     rocketStages[stage].position.copy(
       getPosition(
         lat,
         lon,
-        100 + scaledAltitude + 0.75 // 0.75 is arbitrary. Aims to place the sprite above the line.
+        100 + Math.max(scaledAltitude, 1) // 1 is an arbitrary value to prevent it from clipping into the ground.
       )
     );
 
     dolly.position.copy(getPosition(lat, lon, 250));
     dolly.lookAt(new Vector3(0, 0, 0));
-  }
+  };
 
   update({
     stage: 1,
