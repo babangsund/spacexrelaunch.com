@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { getLaunches, LaunchSummary } from "../data/launch";
 
 import { PreloadLinks } from "./[launchName]";
+import Social from "../components/Social/Social";
 import Header from "../components/Header/Header";
 import { useMounted } from "../components/utils";
 import styles from "../styles/IndexPage.module.css";
@@ -14,6 +15,7 @@ import {
   endPageTransition,
   startPageTransition,
 } from "../components/transitionPage";
+import Meta from "../components/Meta/Meta";
 
 export async function getStaticProps() {
   const launches = getLaunches();
@@ -92,8 +94,9 @@ interface RenderHeadProps {
 function RenderHead({ launch }: RenderHeadProps) {
   return (
     <Head>
+      <Meta />
       <title>Relaunch {launch.name}</title>
-      <meta name="description" content="SpaceX Relaunches" />
+      <meta name="description" content="Relaunch SpaceX missions on-demand" />
       <link rel="icon" href="/favicon.ico" />
       <link rel="preload" as="image" href="/images/stars.png" />
       <link
@@ -265,6 +268,8 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
           <Link href={"/" + selectedLaunch.name}>.</Link>
         </section>
       </main>
+
+      <Social />
     </>
   );
 };

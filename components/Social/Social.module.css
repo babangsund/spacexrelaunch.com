@@ -1,0 +1,25 @@
+.social {
+  right: 0;
+  top: 50%;
+  display: flex;
+  padding: 20px;
+  position: absolute;
+  flex-direction: column;
+  transform: translateY(-50%);
+}
+
+.link {
+  height: 40px;
+  padding: 8px;
+  opacity: 0.5;
+  transition: opacity;
+  will-change: opacity;
+}
+
+.link:hover {
+  opacity: 1;
+}
+
+.social > .link:not(:last-child) {
+  margin-bottom: 40px;
+}

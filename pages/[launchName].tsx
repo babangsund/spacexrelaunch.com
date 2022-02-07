@@ -14,12 +14,13 @@ import Header from "../components/Header/Header";
 import SoundBars from "../components/SoundBars/SoundBars";
 
 import Play from "../components/Play/PlayPause";
+import Social from "../components/Social/Social";
 import { useMusic } from "../components/useMusic";
 import styles from "../styles/LaunchPage.module.css";
 import PlaybackRate, {
   usePlaybackRate,
 } from "../components/PlaybackRate/PlaybackRate";
-import { startPageTransition } from "../components/transitionPage";
+import Meta from "../components/Meta/Meta";
 
 interface LaunchPageProps {
   launch: LaunchWithData<string>;
@@ -182,19 +183,20 @@ const LaunchPage: NextPage<LaunchPageProps> = ({ launch }) => {
   return (
     <>
       <Head>
+        <Meta />
         <title>{launch.name} Relaunch</title>
         <meta
           name="description"
           content={`Launched SpaceX Mission ${launch.name}`}
         />
         <link rel="icon" href="/favicon.ico" />
-      </Head>
 
-      <style global jsx>{`
-        * {
-          font-family: Blender Pro, Helvetica, Arial, sans-serif;
-        }
-      `}</style>
+        <style global jsx>{`
+          * {
+            font-family: Blender Pro, Helvetica, Arial, sans-serif;
+          }
+        `}</style>
+      </Head>
 
       <Header />
 
@@ -226,6 +228,8 @@ const LaunchPage: NextPage<LaunchPageProps> = ({ launch }) => {
           playbackRate={playbackRate}
         />
       </main>
+
+      <Social />
     </>
   );
 };

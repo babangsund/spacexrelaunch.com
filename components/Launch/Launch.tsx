@@ -6,7 +6,7 @@ import { extent } from "d3-array";
 import { interpolateNumber } from "d3-interpolate";
 
 import { makeUI, UpdateUI } from "./UI/ui";
-import { makeVisual } from "./3d/visual";
+import { makeVisual, UpdateVisual } from "./3d/visual";
 import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 import differenceInSeconds from "date-fns/differenceInSeconds";
 
@@ -19,14 +19,6 @@ interface LaunchProps {
   playbackRate: number;
   launch: LaunchWithData<Date>;
 }
-
-type UpdateVisual = (data: {
-  date: Date;
-  speed: number;
-  stage: number;
-  altitude: number;
-  position: Position;
-}) => void;
 
 const Launch = React.memo(function Launch({
   launch,
@@ -115,8 +107,6 @@ const Launch = React.memo(function Launch({
 
       onVisualChange.current({
         stage,
-        date: date.current,
-        speed,
         altitude,
         position: position.slice().reverse() as Position,
       });
