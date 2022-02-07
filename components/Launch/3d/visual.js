@@ -141,11 +141,11 @@ function addAtmosphere(scene, sphereGeometry, position = {}, rotation = {}) {
   const material = new ShaderMaterial({
     vertexShader: atmosphereVertexShader,
     fragmentShader: atmosphereFragmentShader,
-    blending: AdditiveBlending,
     side: BackSide,
     transparent: true,
-    uniforms: UniformsLib.lights,
     depthFunc: NeverDepth,
+    blending: AdditiveBlending,
+    uniforms: UniformsLib.lights,
   });
   const atmosphere = new Mesh(sphereGeometry, material);
   atmosphere.scale.set(0.908, 0.907, 0.907);

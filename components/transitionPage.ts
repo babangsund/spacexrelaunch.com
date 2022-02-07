@@ -3,7 +3,9 @@ export async function startPageTransition() {
     document.body.classList.add("transition");
     // Add classes in separate event loops to trigger a transition
     setTimeout(() => {
-      document.body.classList.add("start");
+      requestAnimationFrame(() => {
+        document.body.classList.add("start");
+      });
     }, 0);
 
     setTimeout(() => {
@@ -17,7 +19,9 @@ export async function endPageTransition() {
     document.body.classList.add("end");
 
     setTimeout(() => {
-      document.body.classList.remove("transition", "start", "end");
+      requestAnimationFrame(() => {
+        document.body.classList.remove("transition", "start", "end");
+      });
     }, 300);
 
     resolve();

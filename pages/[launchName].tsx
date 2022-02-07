@@ -149,7 +149,7 @@ export const PreloadLinks = (
 
 const LaunchPage: NextPage<LaunchPageProps> = ({ launch }) => {
   const launchData = React.useMemo(
-    () => parseLaunchData(launch.data),
+    () => ({ ...launch, data: parseLaunchData(launch.data) }),
     [launch]
   );
 

@@ -4,7 +4,25 @@ import differenceInMinutes from "date-fns/differenceInMinutes";
 
 import { makeGauge } from "./gauge";
 import { toRadians } from "../../utils";
-import { Application, Container, Graphics, Text, Ticker } from "pixi.js";
+import {
+  Text,
+  Ticker,
+  Graphics,
+  Renderer,
+  Container,
+  Application,
+  AbstractRenderer,
+  Sprite,
+  Texture,
+} from "pixi.js";
+import { LaunchData, LaunchWithData } from "../../../data/launch";
+
+export type UpdateUI = (data: {
+  date: Date;
+  speed: number;
+  secondsPassed: number;
+  altitude: number | string;
+}) => void;
 
 const font500 = new FontFaceObserver("Blender Pro", {
   weight: 500,
@@ -15,8 +33,8 @@ const font700 = new FontFaceObserver("Blender Pro", {
 
 const fonts = Promise.all([font500.load(), font700.load()]);
 
-function doesNeedResize(renderer) {
-  const canvas = renderer.domElement || renderer.view;
+function doesNeedResize(renderer: Renderer | AbstractRenderer) {
+  const canvas = renderer.view;
   const width = window.innerWidth;
   const height = window.innerHeight;
   const needResize =
@@ -25,9 +43,9 @@ function doesNeedResize(renderer) {
   return needResize;
 }
 
-const toTwoDigit = (n) => (n < 10 ? "0".concat(String(n)) : String(n));
+const toTwoDigit = (n: number) => (n < 10 ? "0".concat(String(n)) : String(n));
 
-function getCountdown(startDate, endDate) {
+function getCountdown(startDate: Date, endDate: Date) {
   const secondsLeft = differenceInSeconds(endDate, startDate);
   const hoursLeft = secondsLeft / 3600;
   const minutesLeft = secondsLeft / 60;
@@ -41,7 +59,7 @@ function getCountdown(startDate, endDate) {
   )}`;
 }
 
-function getPositionOnTimeline(radius, total, part) {
+function getPositionOnTimeline(radius: number, total: number, part: number) {
   const angle = (360 / total) * part;
 
   const radian = angle * (Math.PI / 180);
@@ -52,10 +70,10 @@ function getPositionOnTimeline(radius, total, part) {
   return { x, y, angle, radian };
 }
 
-function createPIXI(view) {
+function createPIXI(view: HTMLCanvasElement) {
   const app = new Application({
-    resizeTo: view,
     view,
+    resizeTo: view,
     backgroundAlpha: 0,
     //antialias: true || window.devicePixelRatio > 1 ? false : true,
     autoDensity: true,
@@ -68,7 +86,10 @@ function createPIXI(view) {
   return app;
 }
 
-export async function makeUI(canvas, { events, telemetry, liftoffTime }) {
+export async function makeUI(
+  canvas: HTMLCanvasElement,
+  { name, data: { events, telemetry, liftoffTime } }: LaunchWithData<Date>
+) {
   await fonts;
 
   const app = createPIXI(canvas);
@@ -76,7 +97,6 @@ export async function makeUI(canvas, { events, telemetry, liftoffTime }) {
   /**
    * Timeline
    */
-  // const radius = app.screen.height / 2 + 500;
   const radius = app.screen.height;
 
   const timeline = new Container();
@@ -109,6 +129,34 @@ export async function makeUI(canvas, { events, telemetry, liftoffTime }) {
 
   timeline.addChild(foreGround);
 
+  // Inner wheels
+  const innerWheel = new Graphics();
+  innerWheel.lineStyle(2, 0xffffff);
+  innerWheel.drawCircle(0, 0, radius - 50);
+  innerWheel.endFill();
+  innerWheel.alpha = 0.3;
+  innerWheel.x = app.screen.width / 2;
+  innerWheel.y = app.screen.height - 150;
+  timeline.addChild(innerWheel);
+
+  const outerShadow = Sprite.from("/images/outer-shadow.png");
+  outerShadow.anchor.set(0.5);
+  outerShadow.width = radius * 2 + 100;
+  outerShadow.height = radius * 2 + 100;
+  outerShadow.x = app.screen.width / 2;
+  outerShadow.y = app.screen.height - 150;
+  timeline.addChild(outerShadow);
+
+  const innerShadow = new Graphics();
+  innerShadow.beginFill(0x000000);
+  innerShadow.drawCircle(0, 0, radius - 50);
+  innerShadow.endFill();
+  innerShadow.alpha = 0.4;
+  innerShadow.x = app.screen.width / 2;
+  innerShadow.y = app.screen.height - 150;
+  timeline.addChild(innerShadow);
+  // End
+
   const wheel = new Graphics();
   const wheelOffset = -90;
   wheel.angle = wheelOffset;
@@ -121,7 +169,12 @@ export async function makeUI(canvas, { events, telemetry, liftoffTime }) {
 
   const totalSeconds = differenceInSeconds(eventsEnd, liftoffTime);
 
-  const wheelPoints = [];
+  const wheelPoints: {
+    cpContainer: Container;
+    time: Date;
+    title: string;
+    passed?: boolean;
+  }[] = [];
 
   events.forEach((cp, index) => {
     const isAbove = index % 2 === 0;
@@ -168,7 +221,7 @@ export async function makeUI(canvas, { events, telemetry, liftoffTime }) {
     const text = new Text(cp.title, {
       fill: "#ffffff",
       fontSize: 16,
-      fontWeight: 700,
+      fontWeight: "700",
       fontFamily: "Blender Pro",
     });
 
@@ -190,19 +243,19 @@ export async function makeUI(canvas, { events, telemetry, liftoffTime }) {
   const countdown = new Text(`T+ 00:00:00`, {
     fill: "#ffffff",
     fontSize: 48,
-    fontWeight: 500,
+    fontWeight: "500",
     fontFamily: "Blender Pro",
   });
 
-  countdown.y = -100;
+  countdown.y = -90;
   countdown.x = app.screen.width / 2 - countdown.width / 2;
 
   timeline.addChild(countdown);
 
-  const launchName = new Text(`TRANSPORTER 3`, {
+  const launchName = new Text(name.toUpperCase(), {
     fill: "#ffffff",
     fontSize: 20,
-    fontWeight: 500,
+    fontWeight: "500",
     fontFamily: "Blender Pro",
   });
 
@@ -212,14 +265,14 @@ export async function makeUI(canvas, { events, telemetry, liftoffTime }) {
 
   timeline.addChild(launchName);
 
-  const getAlpha = (angle) => {
+  const getAlpha = (angle: number) => {
     if (angle > 180) {
       angle = angle - 360;
     }
     return 1 - Math.abs((angle / 90) * 90) / 25 + 0.25; // 25 and 0.25 are arbitrary values
   };
 
-  const setPointsVisibility = (date) => {
+  const setPointsVisibility = (date: Date) => {
     wheelPoints.forEach((wheelPoint) => {
       const diffInMinutes = differenceInMinutes(wheelPoint.time, date);
       const { angle } = getPositionOnTimeline(
@@ -237,7 +290,9 @@ export async function makeUI(canvas, { events, telemetry, liftoffTime }) {
         wheelPoint.cpContainer.alpha = alpha;
         if (angle <= 0) {
           if (!wheelPoint.passed) {
-            const circle = wheelPoint.cpContainer.getChildByName("circle");
+            const circle = wheelPoint.cpContainer.getChildByName(
+              "circle"
+            ) as Graphics;
             circle.beginFill(0xffffff);
             circle.drawCircle(0, 0, 8 / 3);
             circle.endFill();
@@ -281,18 +336,20 @@ export async function makeUI(canvas, { events, telemetry, liftoffTime }) {
 
   const ticker = Ticker.shared;
   ticker.add(() => {
-    if (doesNeedResize(app.renderer, window.innerWidth, window.innerHeight)) {
+    if (doesNeedResize(app.renderer)) {
       app.renderer.resize(window.innerWidth, window.innerHeight);
       // TODO: Resize elements on window resize
     }
   });
 
-  return ({ date, secondsPassed, altitude, speed }) => {
+  const updateUI: UpdateUI = ({ date, secondsPassed, altitude, speed }) => {
     const angle = (360 / totalSeconds) * secondsPassed;
     wheel.angle = -angle - 90;
     countdown.text = getCountdown(liftoffTime, date);
     setPointsVisibility(date);
     onUpdateSpeedGauge({ value: speed });
-    onUpdateAltGauge({ value: altitude });
+    onUpdateAltGauge({ value: Number(altitude) });
   };
+
+  return updateUI;
 }

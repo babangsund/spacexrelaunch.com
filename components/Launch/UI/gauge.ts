@@ -1,9 +1,17 @@
-//import { Container, Graphics, Text } from "pixi.js";
 import { toRadians, convertRelativeScale } from "../../utils";
 
 import { Container, Graphics, Text } from "pixi.js";
 
-export function makeGauge({ radius, name, unit, min, max, value }) {
+interface MakeGauge {
+  min: number;
+  max: number;
+  name: string;
+  unit: string;
+  value: number;
+  radius: number;
+}
+
+export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
   const gauge = new Container();
   const gaugeMeter = new Container();
   gauge.addChild(gaugeMeter);
@@ -33,7 +41,7 @@ export function makeGauge({ radius, name, unit, min, max, value }) {
   baseGauge.alpha = 0.5;
   gaugeMeter.addChild(baseGauge);
 
-  function getSections(value) {
+  function getSections(value: number) {
     // Value
     const valueInDegrees = convertRelativeScale(
       value,
@@ -68,15 +76,15 @@ export function makeGauge({ radius, name, unit, min, max, value }) {
     radius,
     name,
     unit,
-    value,
+    value: String(value),
   });
 
   return {
     gauge,
-    onUpdate: ({ value }) => {
+    onUpdate: ({ value }: { value: number }) => {
       gaugeValue.clear();
 
-      gaugeValueText.text = value;
+      gaugeValueText.text = String(value);
       gaugeValueText.x = radius - gaugeValueText.width / 2;
       gaugeValueText.y = radius - gaugeValueText.height / 2;
       createGauge(gaugeValue, radius, getSections(value), 10);
@@ -84,8 +92,19 @@ export function makeGauge({ radius, name, unit, min, max, value }) {
   };
 }
 
+interface Step {
+  startAngle: number;
+  endAngle: number;
+  color: number;
+}
+
 // Gauges
-function createGauge(gauge = new Graphics(), radius, steps, width = 4) {
+function createGauge(
+  gauge = new Graphics(),
+  radius: number,
+  steps: Step[],
+  width = 4
+) {
   steps.forEach(({ startAngle, endAngle, color }) => {
     gauge.lineStyle(width, color, 1, 0);
     gauge.arc(radius, radius, radius, startAngle, endAngle);
@@ -95,7 +114,7 @@ function createGauge(gauge = new Graphics(), radius, steps, width = 4) {
   return gauge;
 }
 
-function createMask(radius) {
+function createMask(radius: number) {
   const mask = createGauge(
     undefined,
     radius,
@@ -133,12 +152,20 @@ function createMask(radius) {
   return mask;
 }
 
-function addText({ gauge, radius, name, unit, value }) {
+interface AddText {
+  gauge: Container;
+  radius: number;
+  name: string;
+  unit: string;
+  value: string;
+}
+
+function addText({ gauge, radius, name, unit, value }: AddText) {
   // Gauge text
   const gaugeValueText = new Text(value, {
     fill: "#ffffff",
     fontSize: 40,
-    fontWeight: 500,
+    fontWeight: "500",
     fontFamily: "Blender Pro",
     align: "center",
   });
@@ -150,7 +177,7 @@ function addText({ gauge, radius, name, unit, value }) {
   const gaugeNameText = new Text(name, {
     fill: "#ffffff",
     fontSize: 14,
-    fontWeight: 500,
+    fontWeight: "500",
     fontFamily: "Blender Pro",
   });
   gauge.addChild(gaugeNameText);
@@ -163,7 +190,7 @@ function addText({ gauge, radius, name, unit, value }) {
   const gaugeUnitText = new Text(unit, {
     fill: "#ffffff",
     fontSize: 14,
-    fontWeight: 500,
+    fontWeight: "500",
     fontFamily: "Blender Pro",
   });
   gauge.addChild(gaugeUnitText);

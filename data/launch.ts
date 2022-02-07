@@ -1,5 +1,7 @@
 type Timestamp = string | Date;
 
+export type Position = [number, number];
+
 interface LaunchStats {
   site: string;
   speed: number;
@@ -18,7 +20,7 @@ interface LaunchTelemetry<TDate extends Timestamp> {
   time: TDate;
   speed: number;
   altitude: number;
-  position: [number, number];
+  position: Position;
 }
 
 interface LaunchEvent<TDate extends Timestamp> {
