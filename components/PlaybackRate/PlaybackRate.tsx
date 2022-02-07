@@ -9,12 +9,7 @@ interface PlaybackRateProps {
 
 export default function PlaybackRate({ rate, onChange }: PlaybackRateProps) {
   return (
-    <button
-      type="button"
-      className={styles.button}
-      onClick={() => onChange()}
-      onTouchStart={() => onChange()}
-    >
+    <button type="button" className={styles.button} onClick={() => onChange()}>
       {rate}x
     </button>
   );

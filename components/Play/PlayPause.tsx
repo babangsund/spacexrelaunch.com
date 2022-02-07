@@ -17,7 +17,6 @@ export default function PlayPause({
     <button
       type="button"
       onClick={(e) => onChange(!isPlaying)}
-      onTouchStart={(e) => onChange(!isPlaying)}
       className={`${styles.button} ${className}`}
       aria-label={true ? "Pause button" : "Play button"}
     >
