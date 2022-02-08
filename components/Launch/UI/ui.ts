@@ -31,8 +31,8 @@ const font700 = new FontFaceObserver("Blender Pro", {
 });
 
 const fonts = Promise.all([
-  font500.load(undefined, 10000),
-  font700.load(undefined, 10000),
+  font500.load(undefined, 30000),
+  font700.load(undefined, 30000),
 ]);
 
 function doesNeedResize(renderer: Renderer | AbstractRenderer) {
