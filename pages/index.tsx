@@ -100,36 +100,36 @@ function RenderHead({ launch }: RenderHeadProps) {
       <link rel="icon" href="/favicon.ico" />
       <link rel="preload" as="image" href="/images/stars.png" />
       <link
+        as="font"
         rel="preload"
+        type="font/woff2"
+        crossOrigin="anonymous"
+        href="/fonts/D-DIN/D-DIN.woff2"
+      />
+      <link
+        as="font"
+        rel="preload"
+        type="font/woff2"
+        crossOrigin="anonymous"
+        href="/fonts/D-DIN/D-DIN-Bold.woff2"
+      />
+      <link
         as="image"
+        rel="preload"
         href="/images/x.svg"
         type="image/svg+xml"
       />
       <link
-        rel="preload"
         as="image"
+        rel="preload"
+        type="image/svg+xml"
         href="/images/outline.svg"
-        type="image/svg+xml"
       />
       <link
-        rel="preload"
         as="image"
-        href="/images/outline-outer.svg"
+        rel="preload"
         type="image/svg+xml"
-      />
-      <link
-        rel="preload"
-        as="font"
-        href="/fonts/D-DIN/D-DIN.woff2"
-        type="font/woff2"
-        crossOrigin="anonymous"
-      />
-      <link
-        rel="preload"
-        as="font"
-        href="/fonts/D-DIN/D-DIN-Bold.woff2"
-        type="font/woff2"
-        crossOrigin="anonymous"
+        href="/images/outline-outer.svg"
       />
     </Head>
   );
@@ -202,8 +202,16 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
       <main className={styles.main}>
         <section className={styles.container}>
           <div className={styles.images}>
-            <img src="/images/outline.svg" className={styles.inner} />
-            <img src="/images/outline-outer.svg" className={styles.outer} />
+            <img
+              alt="Inner"
+              className={styles.inner}
+              src="/images/outline.svg"
+            />
+            <img
+              alt="Outer"
+              className={styles.outer}
+              src="/images/outline-outer.svg"
+            />
             <div
               className={styles.background}
               style={{ backgroundImage: `url(${selectedLaunch.img})` }}

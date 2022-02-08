@@ -357,15 +357,15 @@ export async function makeVisual(
   const deferredLoaders: DeferredLoader[] = [];
 
   await Promise.all([
+    loader.loadAsync(`/images/stage-1.png`),
+    loader.loadAsync(`/images/stage-2.png`),
+    loader.loadAsync("/images/earth-low-res.jpg"),
     loader.loadAsync("/images/stars-low-res/nz.png"),
     loader.loadAsync("/images/stars-low-res/pz.png"),
     loader.loadAsync("/images/stars-low-res/py.png"),
     loader.loadAsync("/images/stars-low-res/ny.png"),
     loader.loadAsync("/images/stars-low-res/px.png"),
     loader.loadAsync("/images/stars-low-res/nx.png"),
-    loader.loadAsync("/images/earth-low-res.jpg"),
-    loader.loadAsync(`/images/stage-1.png`),
-    loader.loadAsync(`/images/stage-2.png`),
   ]);
 
   const scene = new Scene();
