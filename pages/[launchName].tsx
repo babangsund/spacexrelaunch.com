@@ -145,6 +145,31 @@ export const PreloadLinks = (
       as="image"
       href="/images/stage-2.png"
     />
+    <link
+      crossOrigin="anonymous"
+      rel="preload"
+      href="/images/play.svg"
+      as="image"
+      type="image/svg+xml"
+    />
+    <link
+      crossOrigin="anonymous"
+      rel="preload"
+      as="image"
+      href="/images/outer-shadow.png"
+    />
+    <link
+      crossOrigin="anonymous"
+      rel="preload"
+      as="image"
+      href="/images/side-shadow.png"
+    />
+    <link
+      crossOrigin="anonymous"
+      rel="preload"
+      as="image"
+      href="/images/gauge-shadow.png"
+    />
     <LaunchNoSSRNoop />
   </>
 );
