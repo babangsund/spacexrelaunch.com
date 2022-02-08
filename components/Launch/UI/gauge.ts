@@ -1,6 +1,7 @@
 import { toRadians, convertRelativeScale } from "../../utils";
 
 import { Container, Graphics, Sprite, Text, Ticker } from "pixi.js";
+import { animate } from "./animate";
 
 interface MakeGauge {
   min: number;
@@ -83,7 +84,7 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
   const gaugeValue = createGauge(undefined, radius, getSections(value), 10);
   gaugeMeter.addChild(gaugeValue);
 
-  const { gaugeValueText } = addText({
+  const { gaugeValueText, gaugeNameText, gaugeUnitText } = addText({
     gauge,
     radius,
     name,
@@ -91,14 +92,55 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
     value: String(value),
   });
 
-  // gaugeValueText.alpha = 0;
+  // 1. Blow up shadow from center
+  // 2. Slide in name and unit from top and bottom
+  // 3. Fade in value
+  // 4. Draw arc from left to right
+  // 5. Enter Stage N telemetry text
 
-  // setTimeout(() => {
-  //   const ticker = Ticker.shared;
-  //   ticker.add(() => {
-  //     gaugeValueText.alpha += 0.01;
-  //   });
-  // }, 5000);
+  // 1
+  shadow.scale.set(0, 0);
+  animate({
+    startValue: shadow.scale,
+    endValue: { x: 0.26, y: 0.26 },
+    durationMs: 300,
+    delayMs: 0,
+  });
+
+  // 2
+  gaugeNameText.alpha = 0;
+  gaugeNameText.position.y -= 20;
+  animate({
+    startValue: gaugeNameText,
+    endValue: {
+      position: { y: gaugeNameText.position.y + 20 },
+      alpha: 1,
+    } as any,
+    durationMs: 300,
+    delayMs: 20,
+  });
+
+  // 2
+  gaugeUnitText.alpha = 0;
+  gaugeUnitText.position.y += 20;
+  animate({
+    startValue: gaugeUnitText,
+    endValue: {
+      position: { y: gaugeUnitText.position.y - 20 },
+      alpha: 1,
+    } as any,
+    durationMs: 300,
+    delayMs: 20,
+  });
+
+  // 3
+  gaugeValueText.alpha = 0;
+  animate({
+    startValue: gaugeValueText,
+    endValue: { alpha: 1 },
+    durationMs: 300,
+    delayMs: 30,
+  });
 
   return {
     gauge: gaugeContainer,
@@ -136,39 +178,38 @@ function createGauge(
 }
 
 function createMask(radius: number) {
-  const mask = createGauge(
-    undefined,
-    radius,
-    [
-      {
-        startAngle: toRadians(180 - 25),
-        endAngle: toRadians(-25),
-        color: 0xffffff,
-      },
-      {
-        startAngle: toRadians(-25),
-        endAngle: toRadians(25),
-        color: 0xff0000,
-      },
-    ],
-    4
-  );
+  const mask = new Graphics();
 
-  const startTick = new Graphics();
-  mask.addChild(startTick);
+  animate({
+    startValue: { angle: toRadians(180 - 25) },
+    endValue: { angle: toRadians(360 + 25) },
+    durationMs: 300,
+    delayMs: 50,
+    onUpdate: ({ angle }) => {
+      mask.clear();
+      mask.lineStyle(4, 0xffffff, 1, 0);
+      mask.arc(radius, radius, radius, toRadians(180 - 25), angle);
+      mask.endFill();
+    },
+    onStart: () => {
+      const startTick = new Graphics();
+      mask.addChild(startTick);
 
-  startTick.beginFill(0xffffff).drawRect(60, 0, -10, 2);
-  startTick.x = 60;
-  startTick.y = 60;
-  startTick.rotation = toRadians(23);
+      startTick.beginFill(0xffffff).drawRect(60, 0, -10, 2);
+      startTick.x = 60;
+      startTick.y = 60;
+      startTick.rotation = toRadians(23);
+    },
+    onComplete: () => {
+      const endTick = new Graphics();
+      mask.addChild(endTick);
 
-  const endTick = new Graphics();
-  mask.addChild(endTick);
-
-  endTick.beginFill(0xff0000).drawRect(60, 0, -10, -2);
-  endTick.rotation = toRadians(180 - 23);
-  endTick.x = 60;
-  endTick.y = 60;
+      endTick.beginFill(0xff0000).drawRect(60, 0, -10, -2);
+      endTick.rotation = toRadians(180 - 23);
+      endTick.x = 60;
+      endTick.y = 60;
+    },
+  });
 
   return mask;
 }

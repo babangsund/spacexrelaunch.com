@@ -15,6 +15,7 @@ import {
 import { makeGauge } from "./gauge";
 import { toRadians } from "../../utils";
 import { LaunchWithData } from "../../../data/launch";
+import { animate } from "./animate";
 
 export type UpdateUI = (data: {
   date: Date;
@@ -312,43 +313,58 @@ export async function makeUI(
 
   setPointsVisibility(events[0].time);
 
-  const gauges = new Container();
+  let updateAltGauge: any;
+  let updateSpeedGauge: any;
 
-  const { gauge: speedGauge, onUpdate: onUpdateSpeedGauge } = makeGauge({
-    radius: 60,
-    min: 0,
-    max: 30000,
-    value: 0,
-    unit: "KM/H",
-    name: "SPEED",
-  });
-  gauges.addChild(speedGauge);
+  function startGauges() {
+    const gauges = new Container();
 
-  const { gauge: altGauge, onUpdate: onUpdateAltGauge } = makeGauge({
-    radius: 60,
-    min: 0,
-    max: 600,
-    value: 0,
-    unit: "KM",
-    name: "ALTITUDE",
-  });
-  altGauge.x = 140;
-  gauges.addChild(altGauge);
+    const { gauge: speedGauge, onUpdate: onUpdateSpeedGauge } = makeGauge({
+      radius: 60,
+      min: 0,
+      max: 30000,
+      value: 0,
+      unit: "KM/H",
+      name: "SPEED",
+    });
+    gauges.addChild(speedGauge);
+    updateSpeedGauge = onUpdateSpeedGauge;
 
-  gauges.x = app.screen.width - gauges.width - 80;
-  gauges.y = app.screen.height - 140;
+    const { gauge: altGauge, onUpdate: onUpdateAltGauge } = makeGauge({
+      radius: 60,
+      min: 0,
+      max: 600,
+      value: 0,
+      unit: "KM",
+      name: "ALTITUDE",
+    });
+    altGauge.x = 140;
+    gauges.addChild(altGauge);
+    updateAltGauge = onUpdateAltGauge;
 
-  // Add shadow behind gauges
-  const shadow = Sprite.from("/images/side-shadow.png");
-  //shadow.anchor.set(0.5);
-  shadow.width = gauges.width * 2;
-  shadow.height = gauges.height;
-  shadow.x = app.screen.width;
-  shadow.y = app.screen.height - 150;
-  shadow.scale.x *= -1; // Mirror
+    gauges.x = app.screen.width - gauges.width - 140;
+    gauges.y = app.screen.height - 140;
 
-  app.stage.addChild(shadow);
-  app.stage.addChild(gauges);
+    // Add shadow behind gauges
+    const shadow = Sprite.from("/images/side-shadow.png");
+    //shadow.anchor.set(0.5);
+    shadow.width = app.screen.width / 3;
+    shadow.height = gauges.height;
+    shadow.x = app.screen.width;
+    shadow.y = app.screen.height - 150;
+    shadow.scale.x *= -1; // Mirror
+
+    shadow.x = app.screen.width + shadow.width;
+    animate({
+      startValue: shadow,
+      endValue: { x: app.screen.width },
+      durationMs: 300,
+      delayMs: 0,
+    });
+
+    app.stage.addChild(shadow);
+    app.stage.addChild(gauges);
+  }
 
   // Resize logic
 
@@ -360,13 +376,20 @@ export async function makeUI(
     }
   });
 
+  let gaugesStarted = false;
+
   const updateUI: UpdateUI = ({ date, secondsPassed, altitude, speed }) => {
     const angle = (360 / totalSeconds) * secondsPassed;
     wheel.angle = -angle - 90;
     countdown.text = getCountdown(liftoffTime, date);
     setPointsVisibility(date);
-    onUpdateSpeedGauge({ value: speed });
-    onUpdateAltGauge({ value: altitude });
+    if (gaugesStarted) {
+      updateSpeedGauge({ value: speed });
+      updateAltGauge({ value: altitude });
+    } else {
+      gaugesStarted = true;
+      startGauges();
+    }
   };
 
   return updateUI;
