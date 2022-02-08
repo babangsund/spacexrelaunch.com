@@ -32,6 +32,8 @@ import {
 
 import { Position, LaunchData, LaunchTelemetry } from "../../../data/launch";
 
+type DeferredLoader = () => void;
+
 export type UpdateVisual = (data: {
   stage: 1 | 2;
   altitude: number;
@@ -83,7 +85,7 @@ function createCamera() {
   const fov = 30;
   const aspect = window.innerWidth / window.innerHeight; // 2; // the canvas default
   const near = 0.1;
-  const far = 1000;
+  const far = 1500;
   const camera = new PerspectiveCamera(fov, aspect, near, far);
   camera.position.set(0, 0, 0);
   // camera.position.z = 0
@@ -111,57 +113,56 @@ function getPosition(lat: number, lon: number, radius: number) {
   return new Vector3(x, y, z);
 }
 
-async function addSkybox(scene: Scene, loader: TextureLoader) {
-  const materialArray = [];
-  const texture_ft = await loader.loadAsync(
-    "/images/skybox-stars-dark-2/nz.png"
-  );
-  const texture_bk = await loader.loadAsync(
-    "/images/skybox-stars-dark-2/pz.png"
-  );
-  const texture_up = await loader.loadAsync(
-    "/images/skybox-stars-dark-2/py.png"
-  );
-  const texture_dn = await loader.loadAsync(
-    "/images/skybox-stars-dark-2/ny.png"
-  );
-  const texture_rt = await loader.loadAsync(
-    "/images/skybox-stars-dark-2/px.png"
-  );
-  const texture_lf = await loader.loadAsync(
-    "/images/skybox-stars-dark-2/nx.png"
-  );
+async function addSkybox(
+  scene: Scene,
+  loader: TextureLoader,
+  deferredLoaders: DeferredLoader[]
+) {
+  const sides = ["nz.png", "pz.png", "py.png", "ny.png", "px.png", "nx.png"];
 
-  materialArray.push(new MeshBasicMaterial({ map: texture_ft }));
-  materialArray.push(new MeshBasicMaterial({ map: texture_bk }));
-  materialArray.push(new MeshBasicMaterial({ map: texture_up }));
-  materialArray.push(new MeshBasicMaterial({ map: texture_dn }));
-  materialArray.push(new MeshBasicMaterial({ map: texture_rt }));
-  materialArray.push(new MeshBasicMaterial({ map: texture_lf }));
+  const materials: MeshBasicMaterial[] = [];
+  for (let i = 0; i < sides.length; i++) {
+    const side = sides[i];
+    const texture = await loader.loadAsync(`/images/stars-low-res/${side}`);
+    materials.push(new MeshBasicMaterial({ map: texture, side: BackSide }));
+  }
 
-  materialArray.forEach((material) => {
-    material.side = BackSide;
-  });
-
-  const geometry = new BoxGeometry(500, 500, 500);
-  const skybox = new Mesh(geometry, materialArray);
+  const geometry = new BoxGeometry(1000, 1000, 1000);
+  const skybox = new Mesh(geometry, materials);
 
   scene.add(skybox);
+
+  deferredLoaders.push(() => {
+    sides.forEach((side, index) => {
+      loader.load(`/images/stars-high-res/${side}`, (texture) => {
+        materials[index].map = texture;
+      });
+    });
+  });
+
   return skybox;
 }
 
 async function addEarth(
   scene: Scene,
   loader: TextureLoader,
-  sphereGeometry: SphereGeometry
+  sphereGeometry: SphereGeometry,
+  deferredLoaders: DeferredLoader[]
 ) {
   const earthMaterial = new MeshStandardMaterial({
-    map: await loader.loadAsync("/images/earth.jpg"),
+    map: await loader.loadAsync("/images/earth-low-res.jpg"),
     color: 0x191919,
   });
   const earth = new Mesh(sphereGeometry, earthMaterial);
 
   scene.add(earth);
+
+  deferredLoaders.push(() => {
+    loader.load("/images/earth-high-res.png", (texture) => {
+      earthMaterial.map = texture;
+    });
+  });
+
   return earth;
 }
 
@@ -353,15 +354,16 @@ export async function makeVisual(
 
   const camera = createCamera();
   const loader = createTextureLoader();
+  const deferredLoaders: DeferredLoader[] = [];
 
   await Promise.all([
-    loader.loadAsync("/images/skybox-stars-dark-2/nz.png"),
-    loader.loadAsync("/images/skybox-stars-dark-2/pz.png"),
-    loader.loadAsync("/images/skybox-stars-dark-2/py.png"),
-    loader.loadAsync("/images/skybox-stars-dark-2/ny.png"),
-    loader.loadAsync("/images/skybox-stars-dark-2/px.png"),
-    loader.loadAsync("/images/skybox-stars-dark-2/nx.png"),
-    loader.loadAsync("/images/earth.jpg"),
+    loader.loadAsync("/images/stars-low-res/nz.png"),
+    loader.loadAsync("/images/stars-low-res/pz.png"),
+    loader.loadAsync("/images/stars-low-res/py.png"),
+    loader.loadAsync("/images/stars-low-res/ny.png"),
+    loader.loadAsync("/images/stars-low-res/px.png"),
+    loader.loadAsync("/images/stars-low-res/nx.png"),
+    loader.loadAsync("/images/earth-low-res.jpg"),
     loader.loadAsync(`/images/stage-1.png`),
     loader.loadAsync(`/images/stage-2.png`),
   ]);
@@ -378,7 +380,7 @@ export async function makeVisual(
   );
 
   // Earth
-  await addEarth(scene, loader, sphereGeometry);
+  await addEarth(scene, loader, sphereGeometry, deferredLoaders);
 
   // Atmosphere
   addAtmosphere(
@@ -391,7 +393,7 @@ export async function makeVisual(
   const light = addLights(scene, launch.liftoffTime);
 
   // Skybox
-  await addSkybox(scene, loader);
+  await addSkybox(scene, loader, deferredLoaders);
 
   addPath(scene, launch, altitudeScale);
 
@@ -448,6 +450,8 @@ export async function makeVisual(
   });
 
   requestAnimationFrame(render);
+
+  deferredLoaders.forEach((l) => l());
 
   return update;
 }
