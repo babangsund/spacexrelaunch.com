@@ -1,6 +1,6 @@
 import { toRadians, convertRelativeScale } from "../../utils";
 
-import { Container, Graphics, Text } from "pixi.js";
+import { Container, Graphics, Sprite, Text } from "pixi.js";
 
 interface MakeGauge {
   min: number;
@@ -12,9 +12,21 @@ interface MakeGauge {
 }
 
 export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
+  const gaugeContainer = new Container();
+
+  const shadow = Sprite.from("/images/gauge-shadow.png");
+  shadow.anchor.set(0.5);
+  shadow.width = radius * 2 + 10;
+  shadow.height = radius * 2 + 10;
+  shadow.x = radius;
+  shadow.y = radius;
+  gaugeContainer.addChild(shadow);
+
   const gauge = new Container();
   const gaugeMeter = new Container();
   gauge.addChild(gaugeMeter);
+
+  gaugeContainer.addChild(gauge);
 
   const mask = createMask(radius);
   gaugeMeter.mask = mask;
@@ -80,7 +92,7 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
   });
 
   return {
-    gauge,
+    gauge: gaugeContainer,
     onUpdate: ({ value }: { value: string | number }) => {
       gaugeValue.clear();
 

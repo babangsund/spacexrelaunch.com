@@ -97,7 +97,7 @@ export async function makeUI(
   /**
    * Timeline
    */
-  const radius = app.screen.height;
+  const radius = app.screen.height * 0.8;
 
   const timeline = new Container();
   timeline.y = radius;
@@ -240,18 +240,22 @@ export async function makeUI(
     cpContainer.visible = false;
   });
 
+  const textContainer = new Container();
+
   // Countdown
   const countdown = new Text(`T+ 00:00:00`, {
     fill: "#ffffff",
     fontSize: 48,
+    align: "center",
     fontWeight: "500",
     fontFamily: "Blender Pro",
   });
 
-  countdown.y = -90;
+  countdown.y = app.screen.height - 100 + 10;
   countdown.x = app.screen.width / 2 - countdown.width / 2;
 
-  timeline.addChild(countdown);
+  textContainer.addChild(countdown);
+  app.stage.addChild(textContainer);
 
   const launchName = new Text(name.toUpperCase(), {
     fill: "#ffffff",
@@ -264,7 +268,7 @@ export async function makeUI(
   launchName.x = app.screen.width / 2 - launchName.width / 2;
   launchName.alpha = 0.7;
 
-  timeline.addChild(launchName);
+  textContainer.addChild(launchName);
 
   const getAlpha = (angle: number) => {
     if (angle > 180) {
@@ -307,7 +311,6 @@ export async function makeUI(
   setPointsVisibility(events[0].time);
 
   const gauges = new Container();
-  app.stage.addChild(gauges);
 
   const { gauge: speedGauge, onUpdate: onUpdateSpeedGauge } = makeGauge({
     radius: 60,
@@ -331,7 +334,19 @@ export async function makeUI(
   gauges.addChild(altGauge);
 
   gauges.x = app.screen.width - gauges.width - 80;
-  gauges.y = app.screen.height - 150;
+  gauges.y = app.screen.height - 140;
+
+  // Add shadow behind gauges
+  const shadow = Sprite.from("/images/side-shadow.png");
+  //shadow.anchor.set(0.5);
+  shadow.width = gauges.width * 2;
+  shadow.height = gauges.height;
+  shadow.x = app.screen.width;
+  shadow.y = app.screen.height - 150;
+  shadow.scale.x *= -1; // Mirror
+
+  app.stage.addChild(shadow);
+  app.stage.addChild(gauges);
 
   // Resize logic
 
