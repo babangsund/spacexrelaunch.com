@@ -113,12 +113,24 @@ function getPosition(lat: number, lon: number, radius: number) {
 
 async function addSkybox(scene: Scene, loader: TextureLoader) {
   const materialArray = [];
-  const texture_ft = await loader.loadAsync("/images/skybox-stars-dark/nz.png");
-  const texture_bk = await loader.loadAsync("/images/skybox-stars-dark/pz.png");
-  const texture_up = await loader.loadAsync("/images/skybox-stars-dark/py.png");
-  const texture_dn = await loader.loadAsync("/images/skybox-stars-dark/ny.png");
-  const texture_rt = await loader.loadAsync("/images/skybox-stars-dark/px.png");
-  const texture_lf = await loader.loadAsync("/images/skybox-stars-dark/nx.png");
+  const texture_ft = await loader.loadAsync(
+    "/images/skybox-stars-dark-2/nz.png"
+  );
+  const texture_bk = await loader.loadAsync(
+    "/images/skybox-stars-dark-2/pz.png"
+  );
+  const texture_up = await loader.loadAsync(
+    "/images/skybox-stars-dark-2/py.png"
+  );
+  const texture_dn = await loader.loadAsync(
+    "/images/skybox-stars-dark-2/ny.png"
+  );
+  const texture_rt = await loader.loadAsync(
+    "/images/skybox-stars-dark-2/px.png"
+  );
+  const texture_lf = await loader.loadAsync(
+    "/images/skybox-stars-dark-2/nx.png"
+  );
 
   materialArray.push(new MeshBasicMaterial({ map: texture_ft }));
   materialArray.push(new MeshBasicMaterial({ map: texture_bk }));
@@ -144,7 +156,7 @@ async function addEarth(
   sphereGeometry: SphereGeometry
 ) {
   const earthMaterial = new MeshStandardMaterial({
-    map: await loader.loadAsync("/images/earth-spacex.png"),
+    map: await loader.loadAsync("/images/earth.jpg"),
     color: 0x191919,
   });
   const earth = new Mesh(sphereGeometry, earthMaterial);
@@ -343,13 +355,13 @@ export async function makeVisual(
   const loader = createTextureLoader();
 
   await Promise.all([
-    loader.loadAsync("/images/skybox-stars-dark/nz.png"),
-    loader.loadAsync("/images/skybox-stars-dark/pz.png"),
-    loader.loadAsync("/images/skybox-stars-dark/py.png"),
-    loader.loadAsync("/images/skybox-stars-dark/ny.png"),
-    loader.loadAsync("/images/skybox-stars-dark/px.png"),
-    loader.loadAsync("/images/skybox-stars-dark/nx.png"),
-    loader.loadAsync("/images/earth-spacex.png"),
+    loader.loadAsync("/images/skybox-stars-dark-2/nz.png"),
+    loader.loadAsync("/images/skybox-stars-dark-2/pz.png"),
+    loader.loadAsync("/images/skybox-stars-dark-2/py.png"),
+    loader.loadAsync("/images/skybox-stars-dark-2/ny.png"),
+    loader.loadAsync("/images/skybox-stars-dark-2/px.png"),
+    loader.loadAsync("/images/skybox-stars-dark-2/nx.png"),
+    loader.loadAsync("/images/earth.jpg"),
     loader.loadAsync(`/images/stage-1.png`),
     loader.loadAsync(`/images/stage-2.png`),
   ]);

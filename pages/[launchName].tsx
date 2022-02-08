@@ -95,43 +95,43 @@ export const PreloadLinks = (
       crossOrigin="anonymous"
       rel="preload"
       as="image"
-      href="/images/skybox-stars-dark/nx.png"
+      href="/images/skybox-stars-dark-2/nx.png"
     />
     <link
       crossOrigin="anonymous"
       rel="preload"
       as="image"
-      href="/images/skybox-stars-dark/ny.png"
+      href="/images/skybox-stars-dark-2/ny.png"
     />
     <link
       crossOrigin="anonymous"
       rel="preload"
       as="image"
-      href="/images/skybox-stars-dark/nz.png"
+      href="/images/skybox-stars-dark-2/nz.png"
     />
     <link
       crossOrigin="anonymous"
       rel="preload"
       as="image"
-      href="/images/skybox-stars-dark/px.png"
+      href="/images/skybox-stars-dark-2/px.png"
     />
     <link
       crossOrigin="anonymous"
       rel="preload"
       as="image"
-      href="/images/skybox-stars-dark/py.png"
+      href="/images/skybox-stars-dark-2/py.png"
     />
     <link
       crossOrigin="anonymous"
       rel="preload"
       as="image"
-      href="/images/skybox-stars-dark/pz.png"
+      href="/images/skybox-stars-dark-2/pz.png"
     />
     <link
       crossOrigin="anonymous"
       rel="preload"
       as="image"
-      href="/images/earth-spacex.png"
+      href="/images/earth.jpg"
     />
     <link
       crossOrigin="anonymous"
