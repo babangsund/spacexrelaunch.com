@@ -9,7 +9,13 @@ interface PlaybackRateProps {
 
 export default function PlaybackRate({ rate, onChange }: PlaybackRateProps) {
   return (
-    <button type="button" className={styles.button} onClick={() => onChange()}>
+    <button
+      type="button"
+      className={styles.button}
+      onClick={() => onChange()}
+      title="Increase playback rate"
+      aria-label="Increase playback rate"
+    >
       {rate}x
     </button>
   );

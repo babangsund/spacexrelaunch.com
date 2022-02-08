@@ -168,14 +168,14 @@
   position: relative;
 }
 
-.stats > div {
+.stat {
   width: 100px;
+  text-align: right;
   position: absolute;
   white-space: nowrap;
-  text-align: right;
 }
 
-.stats > div > * {
+.stat > * {
   margin: 0;
 }
 

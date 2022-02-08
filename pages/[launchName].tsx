@@ -39,9 +39,7 @@ const LaunchNoSSR = dynamic(() => import("../components/Launch/Launch"), {
 const LaunchNoSSRNoop = dynamic(
   () =>
     import("../components/Launch/Launch").then((r) => (() => <div />) as any),
-  {
-    ssr: false,
-  }
+  { ssr: false }
 );
 
 export async function getStaticPaths() {
@@ -94,6 +92,49 @@ export const PreloadLinks = (
     <link
       crossOrigin="anonymous"
       rel="preload"
+      href="/images/play.svg"
+      as="image"
+      type="image/svg+xml"
+    />
+    <link
+      crossOrigin="anonymous"
+      rel="preload"
+      as="image"
+      href="/images/earth-low-res.jpg"
+    />
+    <link
+      crossOrigin="anonymous"
+      rel="preload"
+      as="image"
+      href="/images/stage-1.png"
+    />
+    <link
+      crossOrigin="anonymous"
+      rel="preload"
+      as="image"
+      href="/images/stage-2.png"
+    />
+    <link
+      crossOrigin="anonymous"
+      rel="preload"
+      as="image"
+      href="/images/outer-shadow.png"
+    />
+    <link
+      crossOrigin="anonymous"
+      rel="preload"
+      as="image"
+      href="/images/side-shadow.png"
+    />
+    <link
+      crossOrigin="anonymous"
+      rel="preload"
+      as="image"
+      href="/images/gauge-shadow.png"
+    />
+    <link
+      crossOrigin="anonymous"
+      rel="preload"
       as="image"
       href="/images/stars-low-res/nx.png"
     />
@@ -126,49 +167,6 @@ export const PreloadLinks = (
       rel="preload"
       as="image"
       href="/images/stars-low-res/pz.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/earth-low-res.jpg"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/stage-1.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/stage-2.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      href="/images/play.svg"
-      as="image"
-      type="image/svg+xml"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/outer-shadow.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/side-shadow.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/gauge-shadow.png"
     />
     <LaunchNoSSRNoop />
   </>
@@ -225,7 +223,7 @@ const LaunchPage: NextPage<LaunchPageProps> = ({ launch }) => {
 
       <Header />
 
-      <div
+      <aside
         className={`${styles.controls} ${!isLaunching ? styles.hidden : ""}`}
       >
         <SoundBars isPlaying={isMusicPlaying} onToggle={toggleIsMusicPlaying} />
@@ -234,14 +232,18 @@ const LaunchPage: NextPage<LaunchPageProps> = ({ launch }) => {
           onChange={() => setIsLaunchPlaying((p) => !p)}
         />
         <PlaybackRate rate={playbackRate} onChange={togglePlaybackRate} />
-      </div>
+      </aside>
 
       {!hasLaunched && (
-        <div className={`${styles.enter} ${isLaunching ? styles.hidden : ""}`}>
+        <div
+          role="dialog"
+          onClick={() => toggleLaunch()}
+          className={`${styles.enter} ${isLaunching ? styles.hidden : ""}`}
+        >
           <Play
+            onChange={() => {}}
             className={styles.start}
             isPlaying={isLaunchPlaying}
-            onChange={() => toggleLaunch()}
           />
         </div>
       )}

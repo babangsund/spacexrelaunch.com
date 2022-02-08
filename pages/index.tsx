@@ -70,23 +70,6 @@ function createRotationStyle(angle: number) {
   };
 }
 
-interface StatProps {
-  angle: number;
-  name: React.ReactNode;
-  unit: React.ReactNode;
-  value: React.ReactNode;
-}
-
-export function Stat({ angle, name, unit, value }: StatProps) {
-  return (
-    <div style={createRotationStyle(angle)}>
-      <h2>{value}</h2>
-      <p>{name}</p>
-      <small>{unit}</small>
-    </div>
-  );
-}
-
 interface RenderHeadProps {
   launch: LaunchSummary;
 }
@@ -135,13 +118,30 @@ function RenderHead({ launch }: RenderHeadProps) {
   );
 }
 
+interface StatProps {
+  angle: number;
+  name: React.ReactNode;
+  unit: React.ReactNode;
+  value: React.ReactNode;
+}
+
+export function Stat({ angle, name, unit, value }: StatProps) {
+  return (
+    <li style={createRotationStyle(angle)} className={styles.stat}>
+      <h2>{value}</h2>
+      <p>{name}</p>
+      <small>{unit}</small>
+    </li>
+  );
+}
+
 interface StatsProps {
   launchSummary: LaunchSummary;
 }
 
 function Stats({ launchSummary }: StatsProps) {
   return (
-    <div className={styles.stats}>
+    <ul className={styles.stats}>
       <Stat
         name="Liftoff"
         angle={(90 / 4) * 0}
@@ -178,7 +178,7 @@ function Stats({ launchSummary }: StatsProps) {
           <TransitionValue value={launchSummary.stats.altitude.toString()} />
         }
       />
-    </div>
+    </ul>
   );
 }
 
@@ -198,31 +198,37 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
   return (
     <>
       <RenderHead launch={selectedLaunch} />
+
       <Header />
+
       <main className={styles.main}>
         <section className={styles.container}>
           <div className={styles.images}>
             <img
-              alt="Inner"
+              alt="Inner ring"
+              aria-hidden="true"
               className={styles.inner}
               src="/images/outline.svg"
             />
             <img
-              alt="Outer"
+              alt="Outer ring"
+              aria-hidden="true"
               className={styles.outer}
               src="/images/outline-outer.svg"
             />
             <div
+              role="img"
               className={styles.background}
+              aria-label={`Image of ${selectedLaunch.name} launch`}
               style={{ backgroundImage: `url(${selectedLaunch.img})` }}
             />
-            <div className={styles.shadow} />
-            <hr className={styles.hr} />
+            <div className={styles.shadow} aria-hidden="true" />
+            <hr className={styles.hr} aria-hidden="true" />
           </div>
 
           <Stats launchSummary={selectedLaunch} />
 
-          <div className={styles.dotContainer}>
+          <div className={styles.dotContainer} aria-hidden="true">
             <div
               className={styles.dot}
               style={{
@@ -233,14 +239,17 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
             />
           </div>
 
-          <ul className={styles.launches}>
+          <ul className={styles.launches} role="listbox">
             {launches.map((launch, i) => {
               const isSelected = launch === selectedLaunch;
               return (
                 <li
+                  role="option"
                   key={launch.name}
+                  aria-label={launch.name}
                   className={styles.launch}
                   data-selected={isSelected}
+                  aria-selected={isSelected}
                   onClick={() => {
                     setIndex(i);
                     setLaunch(launch);
@@ -273,7 +282,9 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
 
           {/* Preload assets */}
           {mounted && PreloadLinks}
-          <Link href={"/" + selectedLaunch.name}>.</Link>
+          <Link href={"/" + selectedLaunch.name} aria-hidden="true">
+            {" "}
+          </Link>
         </section>
       </main>
 

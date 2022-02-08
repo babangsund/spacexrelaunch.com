@@ -162,10 +162,10 @@ const Launch = React.memo(function Launch({
   }, [launch, data]);
 
   return (
-    <div>
+    <>
       <canvas className={styles.canvas} id="threeCanvas" ref={threeCanvasRef} />
       <canvas className={styles.uiCanvas} ref={pixiCanvasRef} />
-    </div>
+    </>
   );
 });
 

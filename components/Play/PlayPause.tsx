@@ -15,10 +15,12 @@ export default function PlayPause({
 }: PlayPauseProps) {
   return (
     <button
+      autoFocus
       type="button"
+      title={isPlaying ? "Pause" : "Play"}
       onClick={(e) => onChange(!isPlaying)}
+      aria-label={isPlaying ? "Pause" : "Play"}
       className={`${styles.button} ${className}`}
-      aria-label={true ? "Pause button" : "Play button"}
     >
       <img
         className={styles.image}

@@ -1,6 +1,6 @@
 import { toRadians, convertRelativeScale } from "../../utils";
 
-import { Container, Graphics, Sprite, Text } from "pixi.js";
+import { Container, Graphics, Sprite, Text, Ticker } from "pixi.js";
 
 interface MakeGauge {
   min: number;
@@ -90,6 +90,15 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
     unit,
     value: String(value),
   });
+
+  // gaugeValueText.alpha = 0;
+
+  // setTimeout(() => {
+  //   const ticker = Ticker.shared;
+  //   ticker.add(() => {
+  //     gaugeValueText.alpha += 0.01;
+  //   });
+  // }, 5000);
 
   return {
     gauge: gaugeContainer,

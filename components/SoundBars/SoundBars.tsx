@@ -15,6 +15,8 @@ export default function SoundBars({ onToggle, isPlaying }: SoundBarsProps) {
       data-playing={isPlaying}
       className={styles.button}
       onClick={() => onToggle()}
+      title={isPlaying ? "Mute" : "Unmute"}
+      aria-label={isPlaying ? "Mute" : "Unmute"}
     >
       <div className={styles.bars}>
         <div className={styles.bar} />
