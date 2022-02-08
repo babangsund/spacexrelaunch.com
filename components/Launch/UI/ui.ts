@@ -1,21 +1,20 @@
 import FontFaceObserver from "fontfaceobserver";
 import differenceInSeconds from "date-fns/differenceInSeconds";
 import differenceInMinutes from "date-fns/differenceInMinutes";
-
-import { makeGauge } from "./gauge";
-import { toRadians } from "../../utils";
 import {
   Text,
   Ticker,
+  Sprite,
   Graphics,
   Renderer,
   Container,
   Application,
   AbstractRenderer,
-  Sprite,
-  Texture,
 } from "pixi.js";
-import { LaunchData, LaunchWithData } from "../../../data/launch";
+
+import { makeGauge } from "./gauge";
+import { toRadians } from "../../utils";
+import { LaunchWithData } from "../../../data/launch";
 
 export type UpdateUI = (data: {
   date: Date;
@@ -31,7 +30,10 @@ const font700 = new FontFaceObserver("Blender Pro", {
   weight: 700,
 });
 
-const fonts = Promise.all([font500.load(), font700.load()]);
+const fonts = Promise.all([
+  font500.load(undefined, 10000),
+  font700.load(undefined, 10000),
+]);
 
 function doesNeedResize(renderer: Renderer | AbstractRenderer) {
   const canvas = renderer.view;

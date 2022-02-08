@@ -1,6 +1,6 @@
+import { ScaleLinear } from "d3-scale";
 import { geoInterpolate } from "d3-geo";
 import { interpolateNumber } from "d3-interpolate";
-import { ScaleLinear } from "d3-scale";
 import {
   Line,
   Mesh,
@@ -9,6 +9,7 @@ import {
   Sprite,
   Vector3,
   BackSide,
+  Renderer,
   SpotLight,
   NeverDepth,
   BoxGeometry,
@@ -27,17 +28,9 @@ import {
   MeshBasicMaterial,
   SphereBufferGeometry,
   MeshStandardMaterial,
-  Renderer,
-  Loader,
-  Texture,
-  Camera,
 } from "three";
-import {
-  LaunchData,
-  LaunchTelemetry,
-  LaunchWithData,
-  Position,
-} from "../../../data/launch";
+
+import { Position, LaunchData, LaunchTelemetry } from "../../../data/launch";
 
 export type UpdateVisual = (data: {
   stage: 1 | 2;
