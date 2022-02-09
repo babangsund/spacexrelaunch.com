@@ -31,7 +31,12 @@ interface LaunchEvent<TDate extends Timestamp> {
 export interface LaunchData<TDate extends Timestamp> {
   liftoffTime: TDate;
   events: LaunchEvent<TDate>[];
-  telemetry: LaunchTelemetry<TDate>[];
+  telemetry: {
+    stage: {
+      1: LaunchTelemetry<TDate>[];
+      2: LaunchTelemetry<TDate>[];
+    };
+  };
 }
 
 export interface LaunchWithData<TDate extends Timestamp> extends LaunchSummary {

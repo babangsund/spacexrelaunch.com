@@ -33,91 +33,146 @@ const Launch = React.memo(function Launch({
   const onUIChange = React.useRef<UpdateUI>(() => {});
   const onVisualChange = React.useRef<UpdateVisual>(() => {});
 
-  const interval = React.useRef<NodeJS.Timer>();
-  const date = React.useRef(data.liftoffTime);
-  const endDate = React.useRef(data.telemetry[1].time);
   const secondsPassed = React.useRef(0);
-  const checkpointIndex = React.useRef(0);
-  const interpolators = React.useRef({
-    speed: interpolateNumber(0, data.telemetry[1].speed),
-    altitude: interpolateNumber(0, data.telemetry[1].altitude),
-    position: geoInterpolate(
-      data.telemetry[0].position.slice().reverse() as Position,
-      data.telemetry[1].position.slice().reverse() as Position
-    ),
+  const date = React.useRef(data.liftoffTime);
+  const interval = React.useRef<NodeJS.Timer>();
+  const simulators = React.useRef<any>({
+    stage: {
+      1: {
+        endDate: data.telemetry.stage[1][1].time,
+        checkpointIndex: 0,
+        msFromLastToNextTelemetry: differenceInMilliseconds(
+          data.telemetry.stage[1][1].time,
+          data.liftoffTime
+        ),
+        interpolators: {
+          speed: interpolateNumber(0, data.telemetry.stage[1][1].speed),
+          altitude: interpolateNumber(0, data.telemetry.stage[1][1].altitude),
+          position: geoInterpolate(
+            data.telemetry.stage[1][0].position.slice().reverse() as Position,
+            data.telemetry.stage[1][1].position.slice().reverse() as Position
+          ),
+        },
+      },
+      2: {
+        checkpointIndex: 0,
+        endDate: data.telemetry.stage[2][1].time,
+        msFromLastToNextTelemetry: differenceInMilliseconds(
+          data.telemetry.stage[2][1].time,
+          data.liftoffTime
+        ),
+        interpolators: {
+          speed: interpolateNumber(0, data.telemetry.stage[2][1].speed),
+          altitude: interpolateNumber(0, data.telemetry.stage[2][1].altitude),
+          position: geoInterpolate(
+            data.telemetry.stage[2][0].position.slice().reverse() as Position,
+            data.telemetry.stage[2][1].position.slice().reverse() as Position
+          ),
+        },
+      },
+    },
   });
-
-  const msFromLastToNextTelemetry = React.useRef(
-    differenceInMilliseconds(data.telemetry[1].time, data.liftoffTime)
-  );
 
   const start = React.useCallback(() => {
     const delay = 25;
-    const mECOTime = data.events.find((e) => e.title === "MECO")!.time;
 
-    interval.current = setInterval(() => {
+    interval.current = setInterval(function hello() {
       const newDate = new Date(date.current.getTime() + 25 * playbackRate);
 
       date.current = newDate;
       secondsPassed.current = differenceInSeconds(newDate, data.liftoffTime);
 
-      if (date.current >= endDate.current) {
-        // TODO: Handle no next checkpoint
+      for (let i = 1; i < 3; i++) {
+        const stage = i as 1 | 2;
 
-        checkpointIndex.current = checkpointIndex.current + 1;
-        const checkpoint = data.telemetry[checkpointIndex.current];
-        const nextCheckpoint = data.telemetry[checkpointIndex.current + 1];
-
-        if (!nextCheckpoint) {
-          if (interval.current !== undefined) {
-            clearInterval(interval.current);
-          }
-          return;
+        const stageData = simulators.current.stage[stage];
+        if (stageData.done) {
+          // Break
+          continue;
         }
 
-        msFromLastToNextTelemetry.current = differenceInMilliseconds(
-          nextCheckpoint.time,
-          checkpoint.time
-        );
+        // Stage hasn't started yet
+        if (
+          date.current <
+          data.telemetry.stage[stage][stageData.checkpointIndex].time
+        ) {
+          // Break
+          continue;
+        }
 
-        endDate.current = nextCheckpoint.time;
+        if (date.current >= stageData.endDate) {
+          stageData.checkpointIndex = stageData.checkpointIndex + 1;
+          const checkpoint =
+            data.telemetry.stage[stage][stageData.checkpointIndex];
 
-        interpolators.current = {
-          speed: interpolateNumber(checkpoint.speed, nextCheckpoint.speed),
-          altitude: interpolateNumber(
-            checkpoint.altitude,
-            nextCheckpoint.altitude
-          ),
-          position: geoInterpolate(
-            checkpoint.position.slice().reverse() as Position,
-            nextCheckpoint.position.slice().reverse() as Position
-          ),
-        };
+          const nextCheckpoint =
+            data.telemetry.stage[stage][stageData.checkpointIndex + 1];
+
+          if (!nextCheckpoint) {
+            stageData.done = true;
+
+            onVisualChange.current({
+              stage,
+              altitude: checkpoint.altitude,
+              position: checkpoint.position,
+            });
+            onUIChange.current({
+              stage,
+              date: date.current,
+              speed: checkpoint.speed,
+              secondsPassed: secondsPassed.current,
+              altitude:
+                checkpoint.altitude < 100
+                  ? checkpoint.altitude.toFixed(1)
+                  : Math.round(checkpoint.altitude),
+            });
+
+            continue;
+          }
+
+          stageData.msFromLastToNextTelemetry = differenceInMilliseconds(
+            nextCheckpoint.time,
+            checkpoint.time
+          );
+
+          stageData.endDate = nextCheckpoint.time;
+
+          stageData.interpolators = {
+            speed: interpolateNumber(checkpoint.speed, nextCheckpoint.speed),
+            altitude: interpolateNumber(
+              checkpoint.altitude,
+              nextCheckpoint.altitude
+            ),
+            position: geoInterpolate(
+              checkpoint.position.slice().reverse() as Position,
+              nextCheckpoint.position.slice().reverse() as Position
+            ),
+          };
+        }
+
+        const delta =
+          (differenceInMilliseconds(date.current, stageData.endDate) +
+            stageData.msFromLastToNextTelemetry) /
+          stageData.msFromLastToNextTelemetry;
+
+        const altitude = stageData.interpolators.altitude(delta);
+        const speed = Math.round(stageData.interpolators.speed(delta));
+        const position = stageData.interpolators.position(delta);
+
+        onVisualChange.current({
+          stage,
+          altitude,
+          position: position.slice().reverse() as Position,
+        });
+
+        onUIChange.current({
+          stage,
+          date: date.current,
+          speed,
+          secondsPassed: secondsPassed.current,
+          altitude: altitude < 100 ? altitude.toFixed(1) : Math.round(altitude),
+        });
       }
-
-      const delta =
-        (differenceInMilliseconds(date.current, endDate.current) +
-          msFromLastToNextTelemetry.current) /
-        msFromLastToNextTelemetry.current;
-
-      const altitude = interpolators.current.altitude(delta);
-      const speed = Math.round(interpolators.current.speed(delta));
-      const position = interpolators.current.position(delta);
-      const stage = date.current > mECOTime ? 2 : 1;
-
-      onVisualChange.current({
-        stage,
-        altitude,
-        position: position.slice().reverse() as Position,
-      });
-
-      onUIChange.current({
-        stage,
-        date: date.current,
-        speed,
-        secondsPassed: secondsPassed.current,
-        altitude: altitude < 100 ? altitude.toFixed(1) : Math.round(altitude),
-      });
     }, delay);
   }, [data, playbackRate]);
 
@@ -131,9 +186,14 @@ const Launch = React.memo(function Launch({
   }, [start, isPlaying]);
 
   React.useEffect(() => {
-    async function run() {
+    async function initialize() {
       const altitudeScale = scaleLinear()
-        .domain(extent(data.telemetry, (t) => t.altitude) as [number, number])
+        .domain(
+          extent(
+            data.telemetry.stage[1].concat(data.telemetry.stage[2]),
+            (t) => t.altitude
+          ) as [number, number]
+        )
         .range([0, 5]);
 
       onVisualChange.current = await makeVisual(
@@ -153,7 +213,7 @@ const Launch = React.memo(function Launch({
       }, 200);
     }
 
-    run();
+    initialize();
 
     return () => {
       if (interval.current) {

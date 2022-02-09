@@ -320,12 +320,12 @@ function addLights(scene: Scene, liftoffTime: Date) {
 
 function addPath(
   scene: Scene,
-  launch: LaunchData<Date>,
+  telemetry: LaunchTelemetry<Date>[],
   altitudeScale: ScaleLinear<number, number>
 ) {
   const path = new Line(
     new TubeGeometry(
-      createLinearInterpolationPath(launch.telemetry, altitudeScale),
+      createLinearInterpolationPath(telemetry, altitudeScale),
       6000,
       0.12,
       8,
@@ -395,7 +395,8 @@ export async function makeVisual(
   // Skybox
   await addSkybox(scene, loader, deferredLoaders);
 
-  addPath(scene, launch, altitudeScale);
+  addPath(scene, launch.telemetry.stage[1], altitudeScale);
+  addPath(scene, launch.telemetry.stage[2], altitudeScale);
 
   const stage1 = await addRocketStage(scene, loader, 1);
   const stage2 = await addRocketStage(scene, loader, 2);
@@ -435,7 +436,7 @@ export async function makeVisual(
       getPosition(
         lat,
         lon,
-        100 + Math.max(scaledAltitude, 1) // 1 is an arbitrary value to prevent it from clipping into the ground.
+        101 + scaledAltitude // 1 is an arbitrary value to prevent it from clipping into the ground.
       )
     );
 
@@ -446,7 +447,7 @@ export async function makeVisual(
   update({
     stage: 1,
     altitude: 0,
-    position: launch.telemetry[0].position,
+    position: launch.telemetry.stage[1][0].position,
   });
 
   requestAnimationFrame(render);

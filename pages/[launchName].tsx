@@ -68,7 +68,18 @@ function parseLaunchData(data: LaunchData<string>): LaunchData<Date> {
   return {
     liftoffTime: parseISO(data.liftoffTime),
     events: data.events.map((e) => ({ ...e, time: parseISO(e.time) })),
-    telemetry: data.telemetry.map((t) => ({ ...t, time: parseISO(t.time) })),
+    telemetry: {
+      stage: {
+        1: data.telemetry.stage[1].map((t) => ({
+          ...t,
+          time: parseISO(t.time),
+        })),
+        2: data.telemetry.stage[2].map((t) => ({
+          ...t,
+          time: parseISO(t.time),
+        })),
+      },
+    },
   };
 }
 
