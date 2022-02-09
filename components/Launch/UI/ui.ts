@@ -378,7 +378,7 @@ export async function makeUI(
     // Stage 1
     else {
       shadow.x = 0;
-      gauges.x = 140;
+      gauges.x = 70;
       gauges.y = app.screen.height - 140;
 
       title.x = 140 + title.width / 2;
