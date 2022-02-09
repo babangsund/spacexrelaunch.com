@@ -347,8 +347,8 @@ export async function makeUI(
     animate({
       startValue: title,
       endValue: { y: app.screen.height - 40, alpha: 1 },
-      durationMs: 300,
-      delayMs: 250,
+      durationMs: 500,
+      delayMs: 400,
     });
 
     // Add shadow behind gauges
@@ -371,7 +371,7 @@ export async function makeUI(
       animate({
         startValue: shadow,
         endValue: { x: app.screen.width },
-        durationMs: 300,
+        durationMs: 500,
         delayMs: 0,
       });
     }
@@ -387,7 +387,7 @@ export async function makeUI(
       animate({
         startValue: shadow,
         endValue: { x: 0 },
-        durationMs: 300,
+        durationMs: 500,
         delayMs: 0,
       });
     }

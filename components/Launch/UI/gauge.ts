@@ -103,7 +103,7 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
   animate({
     startValue: shadow.scale,
     endValue: { x: 0.26, y: 0.26 },
-    durationMs: 300,
+    durationMs: 500,
     delayMs: 0,
   });
 
@@ -116,7 +116,7 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
       position: { y: gaugeNameText.position.y + 20 },
       alpha: 1,
     } as any,
-    durationMs: 300,
+    durationMs: 500,
     delayMs: 20,
   });
 
@@ -129,7 +129,7 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
       position: { y: gaugeUnitText.position.y - 20 },
       alpha: 1,
     } as any,
-    durationMs: 300,
+    durationMs: 500,
     delayMs: 20,
   });
 
@@ -138,7 +138,7 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
   animate({
     startValue: gaugeValueText,
     endValue: { alpha: 1 },
-    durationMs: 300,
+    durationMs: 500,
     delayMs: 30,
   });
 
@@ -183,7 +183,7 @@ function createMask(radius: number) {
   animate({
     startValue: { angle: toRadians(180 - 25) },
     endValue: { angle: toRadians(360 + 25) },
-    durationMs: 300,
+    durationMs: 500,
     delayMs: 50,
     onUpdate: ({ angle }) => {
       mask.clear();
