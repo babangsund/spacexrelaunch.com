@@ -18,6 +18,7 @@ import { LaunchWithData } from "../../../data/launch";
 import { animate } from "./animate";
 
 export type UpdateUI = (data: {
+  stage: 1 | 2;
   date: Date;
   speed: number;
   secondsPassed: number;
@@ -311,12 +312,7 @@ export async function makeUI(
     });
   };
 
-  setPointsVisibility(events[0].time);
-
-  let updateAltGauge: any;
-  let updateSpeedGauge: any;
-
-  function startGauges() {
+  function startGauges(stage: 1 | 2) {
     const gauges = new Container();
 
     const { gauge: speedGauge, onUpdate: onUpdateSpeedGauge } = makeGauge({
@@ -328,7 +324,6 @@ export async function makeUI(
       name: "SPEED",
     });
     gauges.addChild(speedGauge);
-    updateSpeedGauge = onUpdateSpeedGauge;
 
     const { gauge: altGauge, onUpdate: onUpdateAltGauge } = makeGauge({
       radius: 60,
@@ -340,10 +335,21 @@ export async function makeUI(
     });
     altGauge.x = 140;
     gauges.addChild(altGauge);
-    updateAltGauge = onUpdateAltGauge;
 
-    gauges.x = app.screen.width - gauges.width - 140;
-    gauges.y = app.screen.height - 140;
+    const title = new Text(`STAGE ${stage} TELEMETRY`, {
+      fill: "#ffffff",
+      fontSize: 16,
+      fontWeight: "700",
+      fontFamily: "Blender Pro",
+    });
+    title.alpha = 0;
+    title.y = app.screen.height - 20;
+    animate({
+      startValue: title,
+      endValue: { y: app.screen.height - 40, alpha: 1 },
+      durationMs: 300,
+      delayMs: 250,
+    });
 
     // Add shadow behind gauges
     const shadow = Sprite.from("/images/side-shadow.png");
@@ -352,22 +358,51 @@ export async function makeUI(
     shadow.height = gauges.height;
     shadow.x = app.screen.width;
     shadow.y = app.screen.height - 150;
-    shadow.scale.x *= -1; // Mirror
 
-    shadow.x = app.screen.width + shadow.width;
-    animate({
-      startValue: shadow,
-      endValue: { x: app.screen.width },
-      durationMs: 300,
-      delayMs: 0,
-    });
+    // Stage 2
+    if (stage === 2) {
+      shadow.scale.x *= -1; // Mirror
+      gauges.x = app.screen.width - gauges.width - 140;
+      gauges.y = app.screen.height - 140;
+
+      title.x = app.screen.width - title.width - 140;
+
+      shadow.x = app.screen.width + shadow.width;
+      animate({
+        startValue: shadow,
+        endValue: { x: app.screen.width },
+        durationMs: 300,
+        delayMs: 0,
+      });
+    }
+    // Stage 1
+    else {
+      shadow.x = 0;
+      gauges.x = 140;
+      gauges.y = app.screen.height - 140;
+
+      title.x = 140 + title.width / 2;
+
+      shadow.x = 0 - shadow.width;
+      animate({
+        startValue: shadow,
+        endValue: { x: 0 },
+        durationMs: 300,
+        delayMs: 0,
+      });
+    }
 
     app.stage.addChild(shadow);
     app.stage.addChild(gauges);
+    app.stage.addChild(title);
+
+    return {
+      updateSpeed: onUpdateSpeedGauge,
+      updateAltitude: onUpdateAltGauge,
+    };
   }
 
   // Resize logic
-
   const ticker = Ticker.shared;
   ticker.add(() => {
     if (doesNeedResize(app.renderer)) {
@@ -376,20 +411,33 @@ export async function makeUI(
     }
   });
 
-  let gaugesStarted = false;
+  const stages: Partial<
+    Record<number, { updateSpeed: Function; updateAltitude: Function }>
+  > = {};
 
-  const updateUI: UpdateUI = ({ date, secondsPassed, altitude, speed }) => {
+  setPointsVisibility(events[0].time);
+
+  const updateUI: UpdateUI = ({
+    date,
+    secondsPassed,
+    altitude,
+    speed,
+    stage,
+  }) => {
     const angle = (360 / totalSeconds) * secondsPassed;
     wheel.angle = -angle - 90;
     countdown.text = getCountdown(liftoffTime, date);
     setPointsVisibility(date);
-    if (gaugesStarted) {
-      updateSpeedGauge({ value: speed });
-      updateAltGauge({ value: altitude });
-    } else {
-      gaugesStarted = true;
-      startGauges();
+
+    const gaugesUpdaters = stages[stage] || startGauges(stage);
+    if (!stages[stage]) {
+      stages[stage] = gaugesUpdaters;
     }
+
+    const { updateSpeed, updateAltitude } = gaugesUpdaters;
+
+    updateSpeed({ value: speed });
+    updateAltitude({ value: altitude });
   };
 
   return updateUI;

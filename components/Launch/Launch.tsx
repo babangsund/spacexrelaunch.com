@@ -112,6 +112,7 @@ const Launch = React.memo(function Launch({
       });
 
       onUIChange.current({
+        stage,
         date: date.current,
         speed,
         secondsPassed: secondsPassed.current,
