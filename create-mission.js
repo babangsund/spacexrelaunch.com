@@ -46,7 +46,7 @@ const stage1Positions = [
 // https://www.google.com/maps/place/SpaceX+Landing+Zones+1+%26+2/@28.4858458,-80.5434021,123m/data=!3m1!1e3!4m12!1m6!3m5!1s0x80ec3bf6877558df:0xb0d74df9bc2530d1!2sSpace+Launch+Complex+10!8m2!3d34.7643062!4d-120.6229698!3m4!1s0x88e0a4802dc1919f:0x98f792466f190cfd!8m2!3d28.4857281!4d-80.5429436
 
 const stage2Positions = [
-  [28.16380240769896, 279.6293167588215 - 360],
+  //[28.16380240769896, 279.6293167588215 - 360],
   [28.06085262285809, 279.6836470385683 - 360],
   [27.92231005672446, 279.7544941318213 - 360],
   [27.76311972491342, 279.8348684973144 - 360],
@@ -740,11 +740,11 @@ const mission = {
   ],
 };
 
-mission.telemetry.stage1.forEach((telemetry, index) => {
+mission.telemetry.stage[1].forEach((telemetry, index) => {
   telemetry.position = stage1Positions[index];
 });
 
-mission.telemetry.stage2.forEach((telemetry, index) => {
+mission.telemetry.stage[2].forEach((telemetry, index) => {
   telemetry.position = stage2Positions[index];
 });
 

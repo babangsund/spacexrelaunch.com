@@ -134,9 +134,7 @@ const Launch = React.memo(function Launch({
             nextCheckpoint.time,
             checkpoint.time
           );
-
           stageData.endDate = nextCheckpoint.time;
-
           stageData.interpolators = {
             speed: interpolateNumber(checkpoint.speed, nextCheckpoint.speed),
             altitude: interpolateNumber(
