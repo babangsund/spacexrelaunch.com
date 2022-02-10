@@ -11,8 +11,6 @@ import {
   Application,
   AbstractRenderer,
   BitmapText,
-  Loader,
-  LoaderResource,
   BitmapFont,
 } from "pixi.js";
 
@@ -37,7 +35,13 @@ const font700 = new FontFaceObserver("Blender Pro", {
   weight: 700,
 });
 
-const bitmapCharacters = BitmapFont.ALPHANUMERIC.concat([".", "/", "+", ":"]);
+const bitmapCharacters = BitmapFont.ALPHANUMERIC.concat([
+  ".",
+  "/",
+  "+",
+  ":",
+  "-",
+]);
 
 const fonts = Promise.all([
   font500.load(undefined, 30000),
