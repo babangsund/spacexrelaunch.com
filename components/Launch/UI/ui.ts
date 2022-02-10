@@ -451,7 +451,7 @@ export async function makeUI(
   });
 
   const stages: Partial<
-    Record<number, { updateSpeed: Function; updateAltitude: Function }>
+    Record<1 | 2, { updateSpeed: Function; updateAltitude: Function }>
   > = {};
 
   setPointsVisibility(events[0].time);

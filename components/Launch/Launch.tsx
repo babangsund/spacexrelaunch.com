@@ -20,6 +20,22 @@ interface LaunchProps {
   launch: LaunchWithData<Date>;
 }
 
+type Stage = 1 | 2;
+
+interface StageSimulator {
+  done: boolean;
+  endDate: Date;
+  checkpointIndex: number;
+  msFromLastToNextTelemetry: number;
+  interpolators: {
+    speed: (t: number) => number;
+    altitude: (t: number) => number;
+    position: (t: number) => [number, number];
+  };
+}
+
+type StageSimulators = Record<Stage, StageSimulator>;
+
 const Launch = React.memo(function Launch({
   launch,
   isPlaying,
@@ -36,42 +52,36 @@ const Launch = React.memo(function Launch({
   const secondsPassed = React.useRef(0);
   const date = React.useRef(data.liftoffTime);
   const interval = React.useRef<NodeJS.Timer>();
-  const simulators = React.useRef<any>({
-    stage: {
-      1: {
-        endDate: data.telemetry.stage[1][1].time,
+  const stageSimulators = React.useRef<StageSimulators>(
+    [1, 2].reduce((stages, n) => {
+      const stage = n as Stage;
+      stages[stage] = {
+        done: false,
+        endDate: data.telemetry.stage[stage][1].time,
         checkpointIndex: 0,
         msFromLastToNextTelemetry: differenceInMilliseconds(
-          data.telemetry.stage[1][1].time,
+          data.telemetry.stage[stage][1].time,
           data.liftoffTime
         ),
         interpolators: {
-          speed: interpolateNumber(0, data.telemetry.stage[1][1].speed),
-          altitude: interpolateNumber(0, data.telemetry.stage[1][1].altitude),
+          speed: interpolateNumber(0, data.telemetry.stage[stage][1].speed),
+          altitude: interpolateNumber(
+            0,
+            data.telemetry.stage[stage][1].altitude
+          ),
           position: geoInterpolate(
-            data.telemetry.stage[1][0].position.slice().reverse() as Position,
-            data.telemetry.stage[1][1].position.slice().reverse() as Position
+            data.telemetry.stage[stage][0].position
+              .slice()
+              .reverse() as Position,
+            data.telemetry.stage[stage][1].position
+              .slice()
+              .reverse() as Position
           ),
         },
-      },
-      2: {
-        checkpointIndex: 0,
-        endDate: data.telemetry.stage[2][1].time,
-        msFromLastToNextTelemetry: differenceInMilliseconds(
-          data.telemetry.stage[2][1].time,
-          data.liftoffTime
-        ),
-        interpolators: {
-          speed: interpolateNumber(0, data.telemetry.stage[2][1].speed),
-          altitude: interpolateNumber(0, data.telemetry.stage[2][1].altitude),
-          position: geoInterpolate(
-            data.telemetry.stage[2][0].position.slice().reverse() as Position,
-            data.telemetry.stage[2][1].position.slice().reverse() as Position
-          ),
-        },
-      },
-    },
-  });
+      };
+      return stages;
+    }, {} as StageSimulators)
+  );
 
   const start = React.useCallback(() => {
     const delay = 25;
@@ -85,7 +95,7 @@ const Launch = React.memo(function Launch({
       for (let i = 1; i < 3; i++) {
         const stage = i as 1 | 2;
 
-        const stageData = simulators.current.stage[stage];
+        const stageData = stageSimulators.current[stage];
         if (stageData.done) {
           // Break
           continue;
