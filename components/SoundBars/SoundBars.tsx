@@ -1,7 +1,7 @@
 import React from "react";
-import { useMusic } from "../useMusic";
 
 import styles from "./SoundBars.module.css";
+import { ControlButton } from "../ControlButton/ControlButton";
 
 interface SoundBarsProps {
   isPlaying: boolean;
@@ -10,10 +10,8 @@ interface SoundBarsProps {
 
 export default function SoundBars({ onToggle, isPlaying }: SoundBarsProps) {
   return (
-    <button
-      type="button"
+    <ControlButton
       data-playing={isPlaying}
-      className={styles.button}
       onClick={() => onToggle()}
       title={isPlaying ? "Mute" : "Unmute"}
       aria-label={isPlaying ? "Mute" : "Unmute"}
@@ -25,6 +23,6 @@ export default function SoundBars({ onToggle, isPlaying }: SoundBarsProps) {
         <div className={styles.bar} />
         <div className={styles.bar} />
       </div>
-    </button>
+    </ControlButton>
   );
 }

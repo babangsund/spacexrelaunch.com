@@ -1,4 +1,5 @@
 import React from "react";
+import { ControlButton } from "../ControlButton/ControlButton";
 
 import styles from "./PlayPause.module.css";
 
@@ -14,19 +15,17 @@ export default function PlayPause({
   className = "",
 }: PlayPauseProps) {
   return (
-    <button
-      autoFocus
-      type="button"
+    <ControlButton
+      className={className}
       title={isPlaying ? "Pause" : "Play"}
-      onClick={(e) => onChange(!isPlaying)}
+      onClick={() => onChange(!isPlaying)}
       aria-label={isPlaying ? "Pause" : "Play"}
-      className={`${styles.button} ${className}`}
     >
       <img
         className={styles.image}
         alt={isPlaying ? "Pause" : "Play"}
         src={isPlaying ? "/images/pause.svg" : "/images/play.svg"}
       />
-    </button>
+    </ControlButton>
   );
 }

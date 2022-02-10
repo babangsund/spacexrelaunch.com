@@ -1,6 +1,7 @@
 import React from "react";
 
 import styles from "./PlaybackRate.module.css";
+import { ControlButton } from "../ControlButton/ControlButton";
 
 interface PlaybackRateProps {
   rate: number;
@@ -9,15 +10,14 @@ interface PlaybackRateProps {
 
 export default function PlaybackRate({ rate, onChange }: PlaybackRateProps) {
   return (
-    <button
-      type="button"
+    <ControlButton
       className={styles.button}
       onClick={() => onChange()}
       title="Increase playback rate"
       aria-label="Increase playback rate"
     >
       {rate}x
-    </button>
+    </ControlButton>
   );
 }
 
@@ -25,8 +25,8 @@ const playbackRates = [1, 2, 3, 5, 10, 50, 100];
 const playbackRatesLength = playbackRates.length;
 
 export function usePlaybackRate(): [number, () => void] {
-  const index = React.useRef(4);
-  const [playbackRate, setPlaybackRate] = React.useState(10);
+  const index = React.useRef(1);
+  const [playbackRate, setPlaybackRate] = React.useState(2);
   return [
     playbackRate,
     React.useCallback(() => {

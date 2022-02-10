@@ -9,29 +9,15 @@
   }
 }
 
-.button {
-  border-radius: 8px;
-  border: 2px solid #fff;
-
-  margin: 0;
-  padding: 0;
-  z-index: 2;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  position: relative;
-  background-color: transparent;
-}
-
-.button[data-playing="false"] .bar {
-  animation: none;
-}
-
 .bars {
   width: 25px;
   height: 25px;
   margin: auto;
   position: relative;
+}
+
+[data-playing="false"] .bar {
+  animation: none;
 }
 
 .bar {

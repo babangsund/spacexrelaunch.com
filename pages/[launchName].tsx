@@ -21,6 +21,8 @@ import PlaybackRate, {
   usePlaybackRate,
 } from "../components/PlaybackRate/PlaybackRate";
 import Meta from "../components/Meta/Meta";
+import Replay from "../components/Replay/Replay";
+import { startPageTransition } from "../components/transitionPage";
 
 interface LaunchPageProps {
   launch: LaunchWithData<string>;
@@ -196,6 +198,8 @@ const LaunchPage: NextPage<LaunchPageProps> = ({ launch }) => {
   const [isLaunching, setIsLaunching] = React.useState(false);
   const [hasLaunched, setHasLaunched] = React.useState(false);
 
+  const [reset, setReset] = React.useState(0);
+
   const toggleLaunch = React.useCallback(() => {
     if (hasLaunched) {
       setIsLaunchPlaying((p) => !p);
@@ -243,6 +247,13 @@ const LaunchPage: NextPage<LaunchPageProps> = ({ launch }) => {
           onChange={() => setIsLaunchPlaying((p) => !p)}
         />
         <PlaybackRate rate={playbackRate} onChange={togglePlaybackRate} />
+        <Replay
+          onClick={async () => {
+            setIsLaunchPlaying(false);
+            startPageTransition();
+            setReset((r) => r + 1);
+          }}
+        />
       </aside>
 
       {!hasLaunched && (
@@ -261,6 +272,7 @@ const LaunchPage: NextPage<LaunchPageProps> = ({ launch }) => {
 
       <main>
         <LaunchNoSSR
+          key={reset}
           launch={launchData}
           isPlaying={isLaunchPlaying}
           playbackRate={playbackRate}
