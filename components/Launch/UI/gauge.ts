@@ -1,6 +1,6 @@
 import { toRadians, convertRelativeScale } from "../../utils";
 
-import { Container, Graphics, Sprite, Text, Ticker } from "pixi.js";
+import { BitmapText, Container, Graphics, Sprite, Text, Ticker } from "pixi.js";
 import { animate } from "./animate";
 
 interface MakeGauge {
@@ -92,6 +92,7 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
     value: String(value),
   });
 
+  // Enter gauge animation
   // 1. Blow up shadow from center
   // 2. Slide in name and unit from top and bottom
   // 3. Fade in value
@@ -148,8 +149,6 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
       gaugeValue.clear();
 
       gaugeValueText.text = String(value);
-      gaugeValueText.x = radius - gaugeValueText.width / 2;
-      gaugeValueText.y = radius - gaugeValueText.height / 2;
       createGauge(gaugeValue, radius, getSections(Number(value)), 10);
     },
   };
@@ -224,43 +223,52 @@ interface AddText {
 
 function addText({ gauge, radius, name, unit, value }: AddText) {
   // Gauge text
-  const gaugeValueText = new Text(value, {
-    fill: "#ffffff",
+  const gaugeValueText = new BitmapText(value, {
+    fontName: "BlenderPro500",
+    // fill: "#ffffff",
     fontSize: 40,
-    fontWeight: "500",
-    fontFamily: "Blender Pro",
+    // fontWeight: "500",
+    // fontFamily: "Blender Pro",
     align: "center",
   });
   gauge.addChild(gaugeValueText);
 
-  gaugeValueText.x = radius - gaugeValueText.width / 2;
-  gaugeValueText.y = radius - gaugeValueText.height / 2;
+  gaugeValueText.anchor.x = 0.5;
+  gaugeValueText.anchor.y = 0.5;
+  gaugeValueText.x = radius;
+  gaugeValueText.y = radius;
 
-  const gaugeNameText = new Text(name, {
-    fill: "#ffffff",
+  const gaugeNameText = new BitmapText(name, {
+    fontName: "BlenderPro500",
+    //fill: "#ffffff",
     fontSize: 14,
-    fontWeight: "500",
-    fontFamily: "Blender Pro",
+    align: "center",
+    //fontWeight: "500",
+    //fontFamily: "Blender Pro",
   });
   gauge.addChild(gaugeNameText);
 
+  gaugeNameText.anchor.x = 0.5;
+  gaugeNameText.anchor.y = 0.5;
   gaugeNameText.alpha = 0.7;
-  gaugeNameText.x = radius - gaugeNameText.width / 2;
-  gaugeNameText.y =
-    radius - gaugeNameText.height / 2 - gaugeValueText.height / 2 - 5;
+  gaugeNameText.x = radius;
+  gaugeNameText.y = radius - gaugeValueText.height / 2 - 5;
 
-  const gaugeUnitText = new Text(unit, {
-    fill: "#ffffff",
+  const gaugeUnitText = new BitmapText(unit, {
+    fontName: "BlenderPro500",
     fontSize: 14,
-    fontWeight: "500",
-    fontFamily: "Blender Pro",
+    // fill: "#ffffff",
+    // fontSize: 14,
+    // fontWeight: "500",
+    // fontFamily: "Blender Pro",
   });
   gauge.addChild(gaugeUnitText);
 
+  gaugeUnitText.anchor.x = 0.5;
+  gaugeUnitText.anchor.y = 0.5;
   gaugeUnitText.alpha = 0.7;
-  gaugeUnitText.x = radius - gaugeUnitText.width / 2;
-  gaugeUnitText.y =
-    radius - gaugeUnitText.height / 2 + gaugeValueText.height / 2 + 7;
+  gaugeUnitText.x = radius;
+  gaugeUnitText.y = radius + gaugeValueText.height / 2 + 5;
 
   return {
     gauge,

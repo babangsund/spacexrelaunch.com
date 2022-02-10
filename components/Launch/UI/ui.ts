@@ -10,12 +10,17 @@ import {
   Container,
   Application,
   AbstractRenderer,
+  BitmapText,
+  Loader,
+  LoaderResource,
+  BitmapFont,
 } from "pixi.js";
 
 import { makeGauge } from "./gauge";
 import { toRadians } from "../../utils";
 import { LaunchWithData } from "../../../data/launch";
 import { animate } from "./animate";
+import { resolve } from "path/posix";
 
 export type UpdateUI = (data: {
   stage: 1 | 2;
@@ -32,10 +37,36 @@ const font700 = new FontFaceObserver("Blender Pro", {
   weight: 700,
 });
 
+const bitmapCharacters = BitmapFont.ALPHANUMERIC.concat([".", "/", "+", ":"]);
+
 const fonts = Promise.all([
   font500.load(undefined, 30000),
   font700.load(undefined, 30000),
-]);
+]).then(() => {
+  BitmapFont.from(
+    "BlenderPro500",
+    {
+      fontSize: 72,
+      fill: "#ffffff",
+      align: "center",
+      fontFamily: "Blender Pro",
+      fontWeight: "500",
+    },
+    { chars: bitmapCharacters }
+  );
+
+  BitmapFont.from(
+    "BlenderPro700",
+    {
+      fontSize: 72,
+      fill: "#ffffff",
+      align: "center",
+      fontFamily: "Blender Pro",
+      fontWeight: "700",
+    },
+    { chars: bitmapCharacters }
+  );
+});
 
 function doesNeedResize(renderer: Renderer | AbstractRenderer) {
   const canvas = renderer.view;
@@ -223,11 +254,12 @@ export async function makeUI(
     line.x = isAbove ? circleRadius : -8;
     line.y = isAbove ? 1 : -1;
 
-    const text = new Text(cp.title, {
-      fill: "#ffffff",
+    const text = new BitmapText(cp.title, {
+      fontName: "BlenderPro700",
       fontSize: 16,
-      fontWeight: "700",
-      fontFamily: "Blender Pro",
+      // fill: "#ffffff",
+      // fontWeight: "700",
+      // fontFamily: "Blender Pro",
     });
 
     text.name = "text";
@@ -247,12 +279,13 @@ export async function makeUI(
   const textContainer = new Container();
 
   // Countdown
-  const countdown = new Text(`T+ 00:00:00`, {
-    fill: "#ffffff",
+  const countdown = new BitmapText(`T+ 00:00:00`, {
+    fontName: "BlenderPro500",
     fontSize: 48,
     align: "center",
-    fontWeight: "500",
-    fontFamily: "Blender Pro",
+    // fill: "#ffffff",
+    // fontWeight: "500",
+    // fontFamily: "Blender Pro",
   });
 
   countdown.y = app.screen.height - 100 + 10;
@@ -261,11 +294,12 @@ export async function makeUI(
   textContainer.addChild(countdown);
   app.stage.addChild(textContainer);
 
-  const launchName = new Text(name.toUpperCase(), {
-    fill: "#ffffff",
+  const launchName = new BitmapText(name.toUpperCase(), {
+    fontName: "BlenderPro500",
     fontSize: 20,
-    fontWeight: "500",
-    fontFamily: "Blender Pro",
+    // fill: "#ffffff",
+    // fontWeight: "500",
+    // fontFamily: "Blender Pro",
   });
 
   launchName.y = countdown.y + countdown.height;
@@ -336,11 +370,12 @@ export async function makeUI(
     altGauge.x = 140;
     gauges.addChild(altGauge);
 
-    const title = new Text(`STAGE ${stage} TELEMETRY`, {
-      fill: "#ffffff",
+    const title = new BitmapText(`STAGE ${stage} TELEMETRY`, {
+      fontName: "BlenderPro700",
+      // fill: "#ffffff",
       fontSize: 16,
-      fontWeight: "700",
-      fontFamily: "Blender Pro",
+      // fontWeight: "700",
+      // fontFamily: "Blender Pro",
     });
     title.alpha = 0;
     title.y = app.screen.height - 20;
@@ -381,7 +416,7 @@ export async function makeUI(
       gauges.x = 70;
       gauges.y = app.screen.height - 140;
 
-      title.x = 140 + title.width / 2;
+      title.x = 70 + title.width / 2;
 
       shadow.x = 0 - shadow.width;
       animate({
