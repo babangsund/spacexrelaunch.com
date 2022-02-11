@@ -142,31 +142,29 @@ export async function makeUI(
   timeline.y = radius;
   app.stage.addChild(timeline);
 
-  const background = new Graphics();
-  background.lineStyle(3, 0xffffff);
-  background.drawCircle(0, 0, radius);
-  background.endFill();
-  background.alpha = 0.5;
-  background.x = app.screen.width / 2;
-  background.y = app.screen.height - 150;
-  timeline.addChild(background);
+  const wheelBackgroundLine = new Graphics();
+  wheelBackgroundLine.lineStyle(3, 0xffffff);
+  wheelBackgroundLine.drawCircle(0, 0, radius);
+  wheelBackgroundLine.endFill();
+  wheelBackgroundLine.alpha = 0.5;
+  wheelBackgroundLine.x = app.screen.width / 2;
+  wheelBackgroundLine.y = app.screen.height - 150;
+  timeline.addChild(wheelBackgroundLine);
 
   const foreGround = new Graphics();
   foreGround.lineStyle(3, 0xffffff);
   foreGround.arc(0, 0, radius, toRadians(-180), toRadians(-90));
   foreGround.x = app.screen.width / 2;
   foreGround.y = app.screen.height - 150;
+  timeline.addChild(foreGround);
 
-  const startTick = new Graphics();
-  foreGround.addChild(startTick);
-
-  startTick
+  const wheelCenterTick = new Graphics();
+  wheelCenterTick
     .beginFill(0xffffff)
     .drawRect(0, -radius - 4, 2, 8)
     .endFill();
-  startTick.rotation = toRadians(0);
-
-  timeline.addChild(foreGround);
+  wheelCenterTick.rotation = toRadians(0);
+  foreGround.addChild(wheelCenterTick);
 
   // Outer gradient shadow
   const outerShadow = Sprite.from("/images/outer-shadow.png");
