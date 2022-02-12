@@ -531,7 +531,7 @@ export async function makeUI(
     animate({
       startValue: notification,
       endValue: {
-        alpha: !launchNotification ? 0.2 : 1,
+        alpha: !launchNotification ? 0.7 : 1,
         transform: {
           position: {
             x: !launchNotification
