@@ -1,18 +1,17 @@
 import React from "react";
-
-import { geoInterpolate } from "d3-geo";
-import { scaleLinear } from "d3-scale";
+import add from "date-fns/add";
 import { extent } from "d3-array";
+import { scaleLinear } from "d3-scale";
+import { geoInterpolate } from "d3-geo";
 import { interpolateNumber } from "d3-interpolate";
-
-import { makeUI, UpdateUI } from "./UI/ui";
-import { makeVisual, UpdateVisual } from "./3d/visual";
-import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 import differenceInSeconds from "date-fns/differenceInSeconds";
+import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 
-import { LaunchWithData, Position } from "../../data/launch";
 import styles from "./Launch.module.css";
+import { makeUI, UpdateUI } from "./UI/ui";
 import { endPageTransition } from "../transitionPage";
+import { makeVisual, UpdateVisual } from "./3d/visual";
+import { LaunchWithData, Position } from "../../data/launch";
 
 interface LaunchProps {
   isPlaying: boolean;
@@ -43,11 +42,14 @@ const Launch = React.memo(function Launch({
 }: LaunchProps) {
   const { data } = launch;
 
+  // Display notifications for 6 seconds
+
   const pixiCanvasRef = React.useRef<HTMLCanvasElement>(null);
   const threeCanvasRef = React.useRef<HTMLCanvasElement>(null);
 
   const onUIChange = React.useRef<UpdateUI>(() => {});
   const onVisualChange = React.useRef<UpdateVisual>(() => {});
+  const onNotificationChange = React.useRef<Function>(() => {});
 
   const secondsPassed = React.useRef(0);
   const date = React.useRef(data.liftoffTime);
@@ -83,15 +85,49 @@ const Launch = React.memo(function Launch({
     }, {} as StageSimulators)
   );
 
+  const notification = React.useRef({
+    index: 0,
+    startsAt: launch.data.notifications[0].time,
+    endsAt: add(launch.data.notifications[0].time, { seconds: 5 }),
+  });
+
   const start = React.useCallback(() => {
     const delay = 25;
 
-    interval.current = setInterval(function hello() {
+    interval.current = setInterval(function start() {
       const newDate = new Date(date.current.getTime() + 25 * playbackRate);
 
       date.current = newDate;
       secondsPassed.current = differenceInSeconds(newDate, data.liftoffTime);
 
+      // Notifications
+
+      if (notification.current.endsAt) {
+        if (date.current >= notification.current.endsAt) {
+          onNotificationChange.current(null);
+          notification.current.endsAt = new Date();
+        }
+      }
+
+      if (date.current >= notification.current.startsAt) {
+        // 1. Remove possibly existing notifications from UI
+        onNotificationChange.current(null);
+        // 2. Add notification to UI
+        const newIndex = notification.current.index;
+        const newNotification = launch.data.notifications[newIndex];
+        notification.current = {
+          index: newIndex + 1,
+          endsAt: add(launch.data.notifications[newIndex]?.time, {
+            seconds: 4,
+          }),
+          startsAt: launch.data.notifications[newIndex + 1]?.time || new Date(),
+        };
+        setTimeout(() => {
+          onNotificationChange.current(newNotification);
+        }, 200 / playbackRate);
+      }
+
+      // Telemetry
       for (let i = 1; i < 3; i++) {
         const stage = i as 1 | 2;
 
@@ -209,10 +245,14 @@ const Launch = React.memo(function Launch({
         data,
         altitudeScale
       );
-      onUIChange.current = await makeUI(
+
+      const { updateUI, updateNotification } = await makeUI(
         pixiCanvasRef.current as HTMLCanvasElement,
         launch
       );
+
+      onUIChange.current = updateUI;
+      onNotificationChange.current = updateNotification;
 
       setTimeout(() => {
         requestAnimationFrame(() => {

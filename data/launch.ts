@@ -28,9 +28,16 @@ interface LaunchEvent<TDate extends Timestamp> {
   title: string;
 }
 
+export interface LaunchNotification<TDate extends Timestamp> {
+  time: TDate;
+  title: string;
+  description: string;
+}
+
 export interface LaunchData<TDate extends Timestamp> {
   liftoffTime: TDate;
   events: LaunchEvent<TDate>[];
+  notifications: LaunchNotification<TDate>[];
   telemetry: {
     stage: {
       1: LaunchTelemetry<TDate>[];

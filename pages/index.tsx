@@ -183,12 +183,12 @@ function Stats({ launchSummary }: StatsProps) {
 }
 
 const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
-  const router = useRouter();
-  const [selectedIndex, setIndex] = React.useState(2);
-  const [selectedLaunch, setLaunch] = React.useState<LaunchSummary>(
-    launches[2]
-  );
+  const [{ selectedIndex, selectedLaunch }, setLaunch] = React.useState({
+    selectedIndex: 0,
+    selectedLaunch: launches[0],
+  });
 
+  const router = useRouter();
   const mounted = useMounted();
 
   React.useEffect(() => {
@@ -251,8 +251,10 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
                   data-selected={isSelected}
                   aria-selected={isSelected}
                   onClick={() => {
-                    setIndex(i);
-                    setLaunch(launch);
+                    setLaunch({
+                      selectedIndex: i,
+                      selectedLaunch: launch,
+                    });
                   }}
                   style={{
                     transform: `rotate(${

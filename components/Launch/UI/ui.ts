@@ -16,7 +16,7 @@ import {
 
 import { makeGauge } from "./gauge";
 import { toRadians } from "../../utils";
-import { LaunchWithData } from "../../../data/launch";
+import { LaunchNotification, LaunchWithData } from "../../../data/launch";
 import { animate } from "./animate";
 import { resolve } from "path/posix";
 
@@ -454,6 +454,102 @@ export async function makeUI(
 
   setPointsVisibility(events[0].time);
 
+  function addNotification() {
+    const width = app.screen.width / 3;
+    const height = 180;
+
+    const notificationContainer = new Container();
+    notificationContainer.width = width;
+    notificationContainer.height = height;
+    app.stage.addChild(notificationContainer);
+
+    // Add shadow behind gauges
+    const shadow = Sprite.from("/images/side-shadow.png");
+    shadow.width = width;
+    shadow.height = height;
+    // Mirror
+    shadow.scale.x *= -1;
+    shadow.x = shadow.width;
+    notificationContainer.addChild(shadow);
+
+    // Title
+    const title = new Text("Text", {
+      fill: 0xffffff,
+      fontFamily: "Blender Pro",
+      fontWeight: "700",
+      fontSize: 24,
+      align: "right",
+    });
+    title.name = "title";
+    title.y = 10;
+    title.x = width - 80;
+    notificationContainer.addChild(title);
+
+    // Content
+    const content = new Text("Text", {
+      fill: 0xffffff,
+      fontFamily: "Blender Pro",
+      fontWeight: "500",
+      fontSize: 16,
+      wordWrap: true,
+      align: "right",
+      wordWrapWidth: width / 2,
+    });
+    content.name = "content";
+    content.y = 10 + title.height + 5;
+    content.x = width - 80;
+    notificationContainer.addChild(content);
+
+    notificationContainer.alpha = 0; // Hide by default
+    notificationContainer.x = app.screen.width; // Hide by default
+    notificationContainer.y = app.screen.height - height;
+
+    return notificationContainer;
+  }
+
+  const notification = addNotification();
+
+  const updateNotification = (
+    launchNotification: null | LaunchNotification<Date>
+  ) => {
+    (notification.getChildByName("title") as Text).text =
+      launchNotification?.title || "";
+    (notification.getChildByName("content") as Text).text =
+      launchNotification?.description || "";
+
+    (notification.getChildByName("title") as Text).x =
+      app.screen.width / 3 -
+      80 -
+      (notification.getChildByName("title") as Text).width;
+    (notification.getChildByName("content") as Text).x =
+      app.screen.width / 3 -
+      80 -
+      (notification.getChildByName("content") as Text).width;
+
+    animate({
+      startValue: notification,
+      endValue: {
+        alpha: !launchNotification ? 0 : 1,
+      },
+      durationMs: 200,
+      delayMs: 0,
+    });
+    animate({
+      startValue: notification,
+      endValue: {
+        transform: {
+          position: {
+            x: !launchNotification
+              ? app.screen.width
+              : app.screen.width - notification.width,
+          } as any,
+        } as any,
+      },
+      durationMs: 200,
+      delayMs: 20,
+    });
+  };
+
   const updateUI: UpdateUI = ({
     date,
     secondsPassed,
@@ -477,5 +573,5 @@ export async function makeUI(
     updateAltitude({ value: altitude });
   };
 
-  return updateUI;
+  return { updateUI, updateNotification };
 }

@@ -70,6 +70,10 @@ function parseLaunchData(data: LaunchData<string>): LaunchData<Date> {
   return {
     liftoffTime: parseISO(data.liftoffTime),
     events: data.events.map((e) => ({ ...e, time: parseISO(e.time) })),
+    notifications: data.notifications.map((n) => ({
+      ...n,
+      time: parseISO(n.time),
+    })),
     telemetry: {
       stage: {
         1: data.telemetry.stage[1].map((t) => ({
