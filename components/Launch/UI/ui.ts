@@ -513,25 +513,27 @@ export async function makeUI(
     launchNotification: null | LaunchNotification<Date>
   ) => {
     // Title
-    (notification.getChildByName("title") as Text).text =
-      launchNotification?.title.toUpperCase() || "";
-    (notification.getChildByName("title") as Text).x =
-      app.screen.width / 3 -
-      80 -
-      (notification.getChildByName("title") as Text).width;
+    if (launchNotification) {
+      (notification.getChildByName("title") as Text).text =
+        launchNotification?.title.toUpperCase() || "";
+      (notification.getChildByName("title") as Text).x =
+        app.screen.width / 3 -
+        80 -
+        (notification.getChildByName("title") as Text).width;
 
-    // Content
-    (notification.getChildByName("content") as Text).text =
-      launchNotification?.description.toUpperCase() || "";
-    (notification.getChildByName("content") as Text).x =
-      app.screen.width / 3 -
-      80 -
-      (notification.getChildByName("content") as Text).width;
+      // Content
+      (notification.getChildByName("content") as Text).text =
+        launchNotification?.description.toUpperCase() || "";
+      (notification.getChildByName("content") as Text).x =
+        app.screen.width / 3 -
+        80 -
+        (notification.getChildByName("content") as Text).width;
+    }
 
     animate({
       startValue: notification,
       endValue: {
-        alpha: !launchNotification ? 0.7 : 1,
+        alpha: !launchNotification ? 0.3 : 1,
         transform: {
           position: {
             x: !launchNotification
