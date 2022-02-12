@@ -380,10 +380,10 @@ export async function makeUI(
       // fontFamily: "Blender Pro",
     });
     title.alpha = 0;
-    title.y = app.screen.height - 20;
+    title.y = app.screen.height - 40;
     animate({
       startValue: title,
-      endValue: { y: app.screen.height - 40, alpha: 1 },
+      endValue: { y: app.screen.height - 60, alpha: 1 },
       durationMs: 200,
       delayMs: 300,
     });
@@ -392,17 +392,17 @@ export async function makeUI(
     const shadow = Sprite.from("/images/side-shadow.png");
     //shadow.anchor.set(0.5);
     shadow.width = app.screen.width / 3;
-    shadow.height = gauges.height;
+    shadow.height = 180;
     shadow.x = app.screen.width;
-    shadow.y = app.screen.height - 150;
+    shadow.y = app.screen.height - 180;
 
     // Stage 2
     if (stage === 2) {
       shadow.scale.x *= -1; // Mirror
       gauges.x = app.screen.width - gauges.width - 140;
-      gauges.y = app.screen.height - 140;
+      gauges.y = app.screen.height - 160;
 
-      title.x = app.screen.width - title.width - 140;
+      title.x = app.screen.width - title.width - 130;
 
       shadow.x = app.screen.width + shadow.width;
       animate({
@@ -416,9 +416,9 @@ export async function makeUI(
     else {
       shadow.x = 0;
       gauges.x = 70;
-      gauges.y = app.screen.height - 140;
+      gauges.y = app.screen.height - 160;
 
-      title.x = 70 + title.width / 2;
+      title.x = 60 + title.width / 2;
 
       shadow.x = 0 - shadow.width;
       animate({
@@ -512,15 +512,17 @@ export async function makeUI(
   const updateNotification = (
     launchNotification: null | LaunchNotification<Date>
   ) => {
+    // Title
     (notification.getChildByName("title") as Text).text =
-      launchNotification?.title || "";
-    (notification.getChildByName("content") as Text).text =
-      launchNotification?.description || "";
-
+      launchNotification?.title.toUpperCase() || "";
     (notification.getChildByName("title") as Text).x =
       app.screen.width / 3 -
       80 -
       (notification.getChildByName("title") as Text).width;
+
+    // Content
+    (notification.getChildByName("content") as Text).text =
+      launchNotification?.description.toUpperCase() || "";
     (notification.getChildByName("content") as Text).x =
       app.screen.width / 3 -
       80 -
@@ -529,14 +531,7 @@ export async function makeUI(
     animate({
       startValue: notification,
       endValue: {
-        alpha: !launchNotification ? 0 : 1,
-      },
-      durationMs: 200,
-      delayMs: 0,
-    });
-    animate({
-      startValue: notification,
-      endValue: {
+        alpha: !launchNotification ? 0.2 : 1,
         transform: {
           position: {
             x: !launchNotification
@@ -546,7 +541,7 @@ export async function makeUI(
         } as any,
       },
       durationMs: 200,
-      delayMs: 20,
+      delayMs: 0,
     });
   };
 
