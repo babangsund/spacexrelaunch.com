@@ -23,7 +23,7 @@ export interface LaunchTelemetry<TDate extends Timestamp> {
   position: Position;
 }
 
-interface LaunchEvent<TDate extends Timestamp> {
+export interface LaunchEvent<TDate extends Timestamp> {
   time: TDate;
   title: string;
 }

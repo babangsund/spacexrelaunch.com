@@ -8,17 +8,20 @@ import {
   Graphics,
   Renderer,
   Container,
-  Application,
-  AbstractRenderer,
   BitmapText,
   BitmapFont,
+  Application,
+  AbstractRenderer,
 } from "pixi.js";
 
+import { animate } from "./animate";
 import { makeGauge } from "./gauge";
 import { toRadians } from "../../utils";
-import { LaunchNotification, LaunchWithData } from "../../../data/launch";
-import { animate } from "./animate";
-import { resolve } from "path/posix";
+import {
+  LaunchEvent,
+  LaunchNotification,
+  LaunchWithData,
+} from "../../../data/launch";
 
 export type UpdateUI = (data: {
   stage: 1 | 2;
@@ -71,6 +74,247 @@ const fonts = Promise.all([
     { chars: bitmapCharacters }
   );
 });
+
+// const one = [
+//   {
+//     title: "LIFTOFF",
+//     time: "2022-01-13T15:25:00.000Z",
+//   },
+//   {
+//     title: "MAX-Q",
+//     time: "2022-01-13T15:26:15.000Z",
+//   },
+//   {
+//     title: "MECO",
+//     time: "2022-01-13T15:27:19.000Z",
+//   },
+//   {
+//     title: "BOOSTBACK",
+//     time: "2022-01-13T15:27:36.000Z",
+//   },
+//   {
+//     title: "FAIRING",
+//     time: "2022-01-13T15:28:56.000Z",
+//   },
+//   {
+//     title: "ENTRY",
+//     time: "2022-01-13T15:31:43.000Z",
+//   },
+//   {
+//     title: "LANDING",
+//     time: "2022-01-13T15:33:01.000Z",
+//   },
+//   {
+//     title: "SECO-1",
+//     time: "2022-01-13T15:33:33.000Z",
+//     checkpoint: true,
+//   },
+// ].map((e) => ({
+//   ...e,
+//   time: new Date(e.time),
+// }));
+
+// const two = [
+//   {
+//     title: "LIFTOFF",
+//     time: "2022-01-13T15:25:00.000Z",
+//   },
+//   {
+//     title: "SECO-1",
+//     time: "2022-01-13T15:33:33.000Z",
+//     checkpoint: true,
+//   },
+//   {
+//     title: "SES-2",
+//     time: "2022-01-13T16:20:21.000Z",
+//     hiddenUntilApproach: true,
+//   },
+//   {
+//     title: "SECO-2",
+//     time: "2022-01-13T16:20:24.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:24:56.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:52:10.000Z",
+//   },
+// ].map((e) => ({
+//   ...e,
+//   time: new Date(e.time),
+// }));
+
+// const three = [
+//   {
+//     title: "SES-2",
+//     time: "2022-01-13T16:20:21.000Z",
+//   },
+//   {
+//     title: "SECO-2",
+//     time: "2022-01-13T16:20:24.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:24:56.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:25:30.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:27:15.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:27:54.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:28:00.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:28:09.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:28:21.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:28:33.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:28:52.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:29:20.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:30:41.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:30:54.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:31:06.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:31:32.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:31:37.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:31:56.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:32:18.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:32:24.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:32:36.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:33:14.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:33:40.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:35:33.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:36:06.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:36:18.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:36:30.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:36:44.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:37:08.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:37:33.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:37:49.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:38:03.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:38:32.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:46:12.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:46:35.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:47:13.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:47:25.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:48:07.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:48:36.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:49:35.000Z",
+//   },
+//   {
+//     title: "DEPLOY",
+//     time: "2022-01-13T16:52:10.000Z",
+//   },
+// ].map((e) => ({
+//   ...e,
+//   time: new Date(e.time),
+// }));
 
 function doesNeedResize(renderer: Renderer | AbstractRenderer) {
   const canvas = renderer.view;
@@ -125,94 +369,21 @@ function createPIXI(view: HTMLCanvasElement) {
   return app;
 }
 
-export async function makeUI(
-  canvas: HTMLCanvasElement,
-  { name, data: { events, telemetry, liftoffTime } }: LaunchWithData<Date>
+interface WheelPoint {
+  time: Date;
+  title: string;
+  passed?: boolean;
+  cpContainer: Container;
+}
+
+function drawEvents(
+  events: LaunchEvent<Date>[],
+  totalSeconds: number,
+  radius: number,
+  liftoffTime: Date,
+  wheel: Graphics
 ) {
-  await fonts;
-
-  const app = createPIXI(canvas);
-
-  /**
-   * Timeline
-   */
-  const radius = app.screen.height * 0.8;
-
-  const timeline = new Container();
-  timeline.y = radius;
-  app.stage.addChild(timeline);
-
-  const wheelBackgroundLine = new Graphics();
-  wheelBackgroundLine.lineStyle(3, 0xffffff);
-  wheelBackgroundLine.drawCircle(0, 0, radius);
-  wheelBackgroundLine.endFill();
-  wheelBackgroundLine.alpha = 0.5;
-  wheelBackgroundLine.x = app.screen.width / 2;
-  wheelBackgroundLine.y = app.screen.height - 150;
-  timeline.addChild(wheelBackgroundLine);
-
-  const foreGround = new Graphics();
-  foreGround.lineStyle(3, 0xffffff);
-  foreGround.arc(0, 0, radius, toRadians(-180), toRadians(-90));
-  foreGround.x = app.screen.width / 2;
-  foreGround.y = app.screen.height - 150;
-  timeline.addChild(foreGround);
-
-  const wheelCenterTick = new Graphics();
-  wheelCenterTick
-    .beginFill(0xffffff)
-    .drawRect(0, -radius - 4, 2, 8)
-    .endFill();
-  wheelCenterTick.rotation = toRadians(0);
-  foreGround.addChild(wheelCenterTick);
-
-  // Outer gradient shadow
-  const outerShadow = Sprite.from("/images/outer-shadow.png");
-  outerShadow.anchor.set(0.5);
-  outerShadow.width = radius * 2 + 100;
-  outerShadow.height = radius * 2 + 100;
-  outerShadow.x = app.screen.width / 2;
-  outerShadow.y = app.screen.height - 150;
-  timeline.addChild(outerShadow);
-
-  // Inner solid shadow
-  const innerShadow = new Graphics();
-  innerShadow.beginFill(0x000000);
-  innerShadow.drawCircle(0, 0, radius - 50);
-  innerShadow.endFill();
-  innerShadow.alpha = 0.4;
-  innerShadow.x = app.screen.width / 2;
-  innerShadow.y = app.screen.height - 150;
-  timeline.addChild(innerShadow);
-
-  // Inner wheel
-  const innerWheel = new Graphics();
-  innerWheel.lineStyle(2, 0xffffff);
-  innerWheel.drawCircle(0, 0, radius - 50);
-  innerWheel.endFill();
-  innerWheel.alpha = 0.3;
-  innerWheel.x = app.screen.width / 2;
-  innerWheel.y = app.screen.height - 150;
-  timeline.addChild(innerWheel);
-
-  // Wheel
-  const wheel = new Graphics();
-  const wheelOffset = -90;
-  wheel.angle = wheelOffset;
-  wheel.x = app.screen.width / 2;
-  wheel.y = app.screen.height - 150;
-  wheel.endFill();
-  timeline.addChild(wheel);
-
-  const eventsEnd = events[events.length - 1].time;
-  const totalSeconds = differenceInSeconds(eventsEnd, liftoffTime);
-
-  const wheelPoints: {
-    time: Date;
-    title: string;
-    passed?: boolean;
-    cpContainer: Container;
-  }[] = [];
+  const wheelPoints: WheelPoint[] = [];
 
   events.forEach((cp, index) => {
     const isAbove = index % 2 === 0;
@@ -275,8 +446,102 @@ export async function makeUI(
     cpContainer.addChild(circle, text, line);
     wheel.addChild(cpContainer);
     wheelPoints.push({ cpContainer, time: cp.time, title: cp.title });
-    cpContainer.visible = false;
+    // cpContainer.visible = false;
+    cpContainer.visible = true;
   });
+
+  return wheelPoints;
+}
+
+export async function makeUI(
+  canvas: HTMLCanvasElement,
+  { name, data: { events, telemetry, liftoffTime } }: LaunchWithData<Date>
+) {
+  await fonts;
+
+  const app = createPIXI(canvas);
+
+  /**
+   * Timeline
+   */
+  const radius = app.screen.height * 0.8;
+
+  const timeline = new Container();
+  timeline.y = radius;
+  app.stage.addChild(timeline);
+
+  const wheelBackgroundLine = new Graphics();
+  wheelBackgroundLine.lineStyle(3, 0xffffff);
+  wheelBackgroundLine.drawCircle(0, 0, radius);
+  wheelBackgroundLine.endFill();
+  wheelBackgroundLine.alpha = 0.5;
+  wheelBackgroundLine.x = app.screen.width / 2;
+  wheelBackgroundLine.y = app.screen.height - 150;
+  timeline.addChild(wheelBackgroundLine);
+
+  const wheelForegroundLine = new Graphics();
+  wheelForegroundLine.lineStyle(3, 0xffffff);
+  wheelForegroundLine.arc(0, 0, radius, toRadians(-180), toRadians(-90));
+  wheelForegroundLine.x = app.screen.width / 2;
+  wheelForegroundLine.y = app.screen.height - 150;
+  timeline.addChild(wheelForegroundLine);
+
+  const wheelCenterTick = new Graphics();
+  wheelCenterTick
+    .beginFill(0xffffff)
+    .drawRect(0, -radius - 4, 2, 8)
+    .endFill();
+  wheelCenterTick.rotation = toRadians(0);
+  wheelForegroundLine.addChild(wheelCenterTick);
+
+  // Outer gradient shadow
+  const outerShadow = Sprite.from("/images/outer-shadow.png");
+  outerShadow.anchor.set(0.5);
+  outerShadow.width = radius * 2 + 100;
+  outerShadow.height = radius * 2 + 100;
+  outerShadow.x = app.screen.width / 2;
+  outerShadow.y = app.screen.height - 150;
+  timeline.addChild(outerShadow);
+
+  // Inner solid shadow
+  const innerShadow = new Graphics();
+  innerShadow.beginFill(0x000000);
+  innerShadow.drawCircle(0, 0, radius - 50);
+  innerShadow.endFill();
+  innerShadow.alpha = 0.4;
+  innerShadow.x = app.screen.width / 2;
+  innerShadow.y = app.screen.height - 150;
+  timeline.addChild(innerShadow);
+
+  // Inner wheel
+  const innerWheel = new Graphics();
+  innerWheel.lineStyle(2, 0xffffff);
+  innerWheel.drawCircle(0, 0, radius - 50);
+  innerWheel.endFill();
+  innerWheel.alpha = 0.3;
+  innerWheel.x = app.screen.width / 2;
+  innerWheel.y = app.screen.height - 150;
+  timeline.addChild(innerWheel);
+
+  // Wheel
+  const wheel = new Graphics();
+  const wheelOffset = -90;
+  wheel.angle = wheelOffset;
+  wheel.x = app.screen.width / 2;
+  wheel.y = app.screen.height - 150;
+  wheel.endFill();
+  timeline.addChild(wheel);
+
+  const eventsEnd = events[events.length - 1].time;
+  const totalSeconds = differenceInSeconds(eventsEnd, liftoffTime);
+
+  const wheelPoints = drawEvents(
+    events,
+    totalSeconds,
+    radius,
+    liftoffTime,
+    wheel
+  );
 
   const textContainer = new Container();
 
@@ -299,9 +564,6 @@ export async function makeUI(
   const launchName = new BitmapText(name.toUpperCase(), {
     fontName: "BlenderPro500",
     fontSize: 20,
-    // fill: "#ffffff",
-    // fontWeight: "500",
-    // fontFamily: "Blender Pro",
   });
 
   launchName.y = countdown.y + countdown.height;
@@ -317,7 +579,7 @@ export async function makeUI(
     return 1 - Math.abs((angle / 90) * 90) / 25 + 0.25; // 25 and 0.25 are arbitrary values
   };
 
-  const setPointsVisibility = (date: Date) => {
+  const setPointsVisibility = (date: Date, wheelPoints: WheelPoint[]) => {
     wheelPoints.forEach((wheelPoint) => {
       const diffInMinutes = differenceInMinutes(wheelPoint.time, date);
       const { angle } = getPositionOnTimeline(
@@ -374,10 +636,7 @@ export async function makeUI(
 
     const title = new BitmapText(`STAGE ${stage} TELEMETRY`, {
       fontName: "BlenderPro700",
-      // fill: "#ffffff",
       fontSize: 16,
-      // fontWeight: "700",
-      // fontFamily: "Blender Pro",
     });
     title.alpha = 0;
     title.y = app.screen.height - 40;
@@ -452,7 +711,7 @@ export async function makeUI(
     Record<1 | 2, { updateSpeed: Function; updateAltitude: Function }>
   > = {};
 
-  setPointsVisibility(events[0].time);
+  setPointsVisibility(events[0].time, wheelPoints);
 
   function addNotification() {
     const width = app.screen.width / 3;
@@ -557,7 +816,7 @@ export async function makeUI(
     const angle = (360 / totalSeconds) * secondsPassed;
     wheel.angle = -angle - 90;
     countdown.text = getCountdown(liftoffTime, date);
-    setPointsVisibility(date);
+    setPointsVisibility(date, wheelPoints);
 
     const gaugesUpdaters = stages[stage] || startGauges(stage);
     if (!stages[stage]) {

@@ -22,11 +22,11 @@ interface LaunchProps {
 type Stage = 1 | 2;
 
 interface StageSimulator {
-  done: boolean;
-  endDate: Date;
-  checkpointIndex: number;
-  msFromLastToNextTelemetry: number;
-  interpolators: {
+  isDone: boolean;
+  waypointIndex: number;
+  waypointEndTime: Date;
+  timeToNextWaypointMs: number;
+  waypointInterpolators: {
     speed: (t: number) => number;
     altitude: (t: number) => number;
     position: (t: number) => [number, number];
@@ -42,8 +42,6 @@ const Launch = React.memo(function Launch({
 }: LaunchProps) {
   const { data } = launch;
 
-  // Display notifications for 6 seconds
-
   const pixiCanvasRef = React.useRef<HTMLCanvasElement>(null);
   const threeCanvasRef = React.useRef<HTMLCanvasElement>(null);
 
@@ -58,14 +56,14 @@ const Launch = React.memo(function Launch({
     [1, 2].reduce((stages, n) => {
       const stage = n as Stage;
       stages[stage] = {
-        done: false,
-        endDate: data.telemetry.stage[stage][1].time,
-        checkpointIndex: 0,
-        msFromLastToNextTelemetry: differenceInMilliseconds(
+        isDone: false,
+        waypointEndTime: data.telemetry.stage[stage][1].time,
+        waypointIndex: 0,
+        timeToNextWaypointMs: differenceInMilliseconds(
           data.telemetry.stage[stage][1].time,
           data.liftoffTime
         ),
-        interpolators: {
+        waypointInterpolators: {
           speed: interpolateNumber(0, data.telemetry.stage[stage][1].speed),
           altitude: interpolateNumber(
             0,
@@ -118,7 +116,7 @@ const Launch = React.memo(function Launch({
         notification.current = {
           index: newIndex + 1,
           endsAt: add(launch.data.notifications[newIndex]?.time, {
-            seconds: 4,
+            seconds: 5,
           }),
           startsAt: launch.data.notifications[newIndex + 1]?.time || new Date(),
         };
@@ -132,7 +130,7 @@ const Launch = React.memo(function Launch({
         const stage = i as 1 | 2;
 
         const stageData = stageSimulators.current[stage];
-        if (stageData.done) {
+        if (stageData.isDone) {
           // Break
           continue;
         }
@@ -140,22 +138,22 @@ const Launch = React.memo(function Launch({
         // Stage hasn't started yet
         if (
           date.current <
-          data.telemetry.stage[stage][stageData.checkpointIndex].time
+          data.telemetry.stage[stage][stageData.waypointIndex].time
         ) {
           // Break
           continue;
         }
 
-        if (date.current >= stageData.endDate) {
-          stageData.checkpointIndex = stageData.checkpointIndex + 1;
+        if (date.current >= stageData.waypointEndTime) {
+          stageData.waypointIndex = stageData.waypointIndex + 1;
           const checkpoint =
-            data.telemetry.stage[stage][stageData.checkpointIndex];
+            data.telemetry.stage[stage][stageData.waypointIndex];
 
           const nextCheckpoint =
-            data.telemetry.stage[stage][stageData.checkpointIndex + 1];
+            data.telemetry.stage[stage][stageData.waypointIndex + 1];
 
           if (!nextCheckpoint) {
-            stageData.done = true;
+            stageData.isDone = true;
 
             onVisualChange.current({
               stage,
@@ -176,12 +174,12 @@ const Launch = React.memo(function Launch({
             continue;
           }
 
-          stageData.msFromLastToNextTelemetry = differenceInMilliseconds(
+          stageData.timeToNextWaypointMs = differenceInMilliseconds(
             nextCheckpoint.time,
             checkpoint.time
           );
-          stageData.endDate = nextCheckpoint.time;
-          stageData.interpolators = {
+          stageData.waypointEndTime = nextCheckpoint.time;
+          stageData.waypointInterpolators = {
             speed: interpolateNumber(checkpoint.speed, nextCheckpoint.speed),
             altitude: interpolateNumber(
               checkpoint.altitude,
@@ -195,13 +193,13 @@ const Launch = React.memo(function Launch({
         }
 
         const delta =
-          (differenceInMilliseconds(date.current, stageData.endDate) +
-            stageData.msFromLastToNextTelemetry) /
-          stageData.msFromLastToNextTelemetry;
+          (differenceInMilliseconds(date.current, stageData.waypointEndTime) +
+            stageData.timeToNextWaypointMs) /
+          stageData.timeToNextWaypointMs;
 
-        const altitude = stageData.interpolators.altitude(delta);
-        const speed = Math.round(stageData.interpolators.speed(delta));
-        const position = stageData.interpolators.position(delta);
+        const position = stageData.waypointInterpolators.position(delta);
+        const altitude = stageData.waypointInterpolators.altitude(delta);
+        const speed = Math.round(stageData.waypointInterpolators.speed(delta));
 
         onVisualChange.current({
           stage,
@@ -218,7 +216,12 @@ const Launch = React.memo(function Launch({
         });
       }
     }, delay);
-  }, [data, playbackRate]);
+  }, [
+    playbackRate,
+    data.liftoffTime,
+    data.telemetry.stage,
+    launch.data.notifications,
+  ]);
 
   React.useEffect(() => {
     if (interval.current) {
