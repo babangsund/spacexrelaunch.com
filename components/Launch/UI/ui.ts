@@ -165,13 +165,13 @@ function addTimelineEvents(
 ) {
   const wheelEvents: TimelineEvent[] = [];
 
-  events.forEach((cp, index) => {
+  events.forEach((event, index) => {
     const isAbove = index % 2 === 0;
 
     const { x, y, angle } = getPositionOnTimeline(
       radius,
       totalMs,
-      differenceInMilliseconds(cp.time, liftoffTime)
+      differenceInMilliseconds(event.time, liftoffTime)
     );
     const cpContainer = new Container();
 
@@ -203,7 +203,7 @@ function addTimelineEvents(
     line.x = isAbove ? circleRadius : -8;
     line.y = isAbove ? 1 : -1;
 
-    const text = new BitmapText(cp.title, {
+    const text = new BitmapText(event.title, {
       fontName: "BlenderPro700",
       fontSize: 16,
     });
@@ -218,7 +218,7 @@ function addTimelineEvents(
 
     cpContainer.addChild(circle, text, line);
     wheel.addChild(cpContainer);
-    wheelEvents.push({ cpContainer, time: cp.time, title: cp.title });
+    wheelEvents.push({ cpContainer, time: event.time, title: event.title });
     cpContainer.visible = false;
   });
 
@@ -568,11 +568,6 @@ export class UI {
 
     this.timeline = addTimeline(app, radius).timeline;
 
-    this.totalSeconds = differenceInSeconds(
-      events[events.length - 1].time,
-      liftoffTime
-    );
-
     this.totalMs = differenceInMilliseconds(
       events[events.length - 1].time,
       liftoffTime
@@ -592,7 +587,7 @@ export class UI {
       events[0].time,
       this.timelineEvents,
       radius,
-      this.totalSeconds
+      this.totalMs
     );
 
     this.notification = addNotification(app);
@@ -609,11 +604,11 @@ export class UI {
     // Title
     if (launchNotification) {
       (notification.getChildByName("title") as Text).text =
-        launchNotification?.title.toUpperCase() || "";
+        launchNotification.title.toUpperCase() || "";
 
       // Description
       (notification.getChildByName("description") as Text).text =
-        launchNotification?.description.toUpperCase() || "";
+        launchNotification.description.toUpperCase() || "";
     }
 
     animate({
@@ -641,7 +636,7 @@ export class UI {
       app,
       radius,
       stages,
-      totalSeconds,
+      totalMs,
       timeline,
       timelineEvents,
       countdownText,
@@ -650,7 +645,6 @@ export class UI {
       },
     } = this;
 
-    const totalMs = totalSeconds * 1000;
     const msPassed = differenceInMilliseconds(date, liftoffTime);
 
     const angle = (360 / totalMs) * msPassed;
