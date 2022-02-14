@@ -225,11 +225,8 @@ function addText({ gauge, radius, name, unit, value }: AddText) {
   // Gauge text
   const gaugeValueText = new BitmapText(value, {
     fontName: "BlenderPro500",
-    // fill: "#ffffff",
-    fontSize: 40,
-    // fontWeight: "500",
-    // fontFamily: "Blender Pro",
     align: "center",
+    fontSize: 40,
   });
   gauge.addChild(gaugeValueText);
 

@@ -8,7 +8,7 @@ import differenceInSeconds from "date-fns/differenceInSeconds";
 import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 
 import styles from "./Launch.module.css";
-import { makeUI, UpdateUI } from "./UI/ui";
+import { makeUI, UI, UpdateUI } from "./UI/ui";
 import { endPageTransition } from "../transitionPage";
 import { makeVisual, UpdateVisual } from "./3d/visual";
 import { LaunchWithData, Position } from "../../data/launch";
@@ -249,8 +249,9 @@ const Launch = React.memo(function Launch({
         altitudeScale
       );
 
-      const { updateUI, updateNotification } = await makeUI(
+      const { updateUI, updateNotification } = await UI.ofElement(
         pixiCanvasRef.current as HTMLCanvasElement,
+        window.innerHeight * 0.8,
         launch
       );
 
