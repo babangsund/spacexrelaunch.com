@@ -39,8 +39,7 @@ const LaunchNoSSR = dynamic(() => import("../components/Launch/Launch"), {
 });
 
 const LaunchNoSSRNoop = dynamic(
-  () =>
-    import("../components/Launch/Launch").then((r) => (() => <div />) as any),
+  () => import("../components/Launch/Launch").then((r) => (() => null) as any),
   { ssr: false }
 );
 

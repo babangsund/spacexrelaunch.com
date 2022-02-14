@@ -542,7 +542,7 @@
       "description": "MAXIMUM DYNAMIC PRESSURE\nTHIS IS THE LARGEST AMOUNT OF STRESS EXERTED ON THE VEHICLE"
     },
     {
-      "title": "Main engine cutoff",
+      "title": "MECO",
       "time": "2022-01-13T15:27:19.000Z",
       "description": "Main engine cutoff"
     },

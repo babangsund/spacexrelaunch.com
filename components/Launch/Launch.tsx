@@ -4,13 +4,12 @@ import { extent } from "d3-array";
 import { scaleLinear } from "d3-scale";
 import { geoInterpolate } from "d3-geo";
 import { interpolateNumber } from "d3-interpolate";
-import differenceInSeconds from "date-fns/differenceInSeconds";
 import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 
 import styles from "./Launch.module.css";
-import { makeUI, UI, UpdateUI } from "./UI/ui";
 import { endPageTransition } from "../transitionPage";
 import { makeVisual, UpdateVisual } from "./3d/visual";
+import { UI, UpdateUI, UpdateNotification } from "./UI/UI";
 import { LaunchWithData, Position } from "../../data/launch";
 
 interface LaunchProps {
@@ -47,9 +46,8 @@ const Launch = React.memo(function Launch({
 
   const onUIChange = React.useRef<UpdateUI>(() => {});
   const onVisualChange = React.useRef<UpdateVisual>(() => {});
-  const onNotificationChange = React.useRef<Function>(() => {});
+  const onNotificationChange = React.useRef<UpdateNotification>(() => {});
 
-  const secondsPassed = React.useRef(0);
   const date = React.useRef(data.liftoffTime);
   const interval = React.useRef<NodeJS.Timer>();
   const stageSimulators = React.useRef<StageSimulators>(
@@ -96,7 +94,6 @@ const Launch = React.memo(function Launch({
       const newDate = new Date(date.current.getTime() + 25 * playbackRate);
 
       date.current = newDate;
-      secondsPassed.current = differenceInSeconds(newDate, data.liftoffTime);
 
       // Notifications
 
@@ -164,7 +161,6 @@ const Launch = React.memo(function Launch({
               stage,
               date: date.current,
               speed: checkpoint.speed,
-              secondsPassed: secondsPassed.current,
               altitude:
                 checkpoint.altitude < 100
                   ? checkpoint.altitude.toFixed(1)
@@ -211,7 +207,6 @@ const Launch = React.memo(function Launch({
           stage,
           date: date.current,
           speed,
-          secondsPassed: secondsPassed.current,
           altitude: altitude < 100 ? altitude.toFixed(1) : Math.round(altitude),
         });
       }

@@ -1,6 +1,7 @@
 import FontFaceObserver from "fontfaceobserver";
 import differenceInSeconds from "date-fns/differenceInSeconds";
 import differenceInMinutes from "date-fns/differenceInMinutes";
+import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 import {
   Text,
   Ticker,
@@ -33,11 +34,14 @@ interface StageUpdaters {
   2?: Updaters;
 }
 
+export type UpdateNotification = (
+  launchNotification: null | LaunchNotification<Date>
+) => void;
+
 export type UpdateUI = (data: {
   stage: 1 | 2;
   date: Date;
   speed: number;
-  secondsPassed: number;
   altitude: number | string;
 }) => void;
 
@@ -154,7 +158,7 @@ interface TimelineEvent {
 
 function addTimelineEvents(
   events: LaunchEvent<Date>[],
-  totalSeconds: number,
+  totalMs: number,
   radius: number,
   liftoffTime: Date,
   wheel: Graphics
@@ -166,8 +170,8 @@ function addTimelineEvents(
 
     const { x, y, angle } = getPositionOnTimeline(
       radius,
-      totalSeconds,
-      differenceInSeconds(cp.time, liftoffTime)
+      totalMs,
+      differenceInMilliseconds(cp.time, liftoffTime)
     );
     const cpContainer = new Container();
 
@@ -350,6 +354,7 @@ function addNotification(app: Application) {
   title.name = "title";
   title.y = 10;
   title.x = width - 80;
+  title.anchor.x = 1;
   notificationContainer.addChild(title);
 
   // Description
@@ -365,6 +370,7 @@ function addNotification(app: Application) {
   description.name = "description";
   description.y = 10 + title.height + 5;
   description.x = width - 80;
+  description.anchor.x = 1;
   notificationContainer.addChild(description);
 
   return notificationContainer;
@@ -462,14 +468,14 @@ function setPointsVisibility(
   date: Date,
   timelineEvents: TimelineEvent[],
   radius: number,
-  totalSeconds: number
+  totalMs: number
 ) {
   timelineEvents.forEach((timelineEvent) => {
     const diffInMinutes = differenceInMinutes(timelineEvent.time, date);
     const { angle } = getPositionOnTimeline(
       radius,
-      totalSeconds,
-      differenceInSeconds(timelineEvent.time, date)
+      totalMs,
+      differenceInMilliseconds(timelineEvent.time, date)
     );
 
     const alpha = getTimelineAlpha(angle);
@@ -508,15 +514,10 @@ export class UI {
     fontSize: 16,
   });
 
+  totalMs = 0;
   totalSeconds = 0;
-  activeLaunchNotification: null | LaunchNotification<Date> = null;
-  latestUIState: {
-    stage: 1 | 2;
-    date: Date;
-    speed: number;
-    secondsPassed: number;
-    altitude: number | string;
-  } | null = null;
+  updateUIParameters: Parameters<UpdateUI> | null = null;
+  updateNotificationParameters: Parameters<UpdateNotification> = [null];
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -538,8 +539,9 @@ export class UI {
         this.app = createPIXI(canvas);
         requestAnimationFrame(() => {
           this.initialize();
-          this.updateNotification(this.activeLaunchNotification);
-          if (this.latestUIState) this.updateUI(this.latestUIState);
+          this.updateNotification(...this.updateNotificationParameters);
+          if (this.updateUIParameters)
+            this.updateUI(...this.updateUIParameters);
         });
       }
     });
@@ -571,9 +573,14 @@ export class UI {
       liftoffTime
     );
 
+    this.totalMs = differenceInMilliseconds(
+      events[events.length - 1].time,
+      liftoffTime
+    );
+
     this.timelineEvents = addTimelineEvents(
       events,
-      this.totalSeconds,
+      this.totalMs,
       radius,
       liftoffTime,
       this.timeline
@@ -593,29 +600,20 @@ export class UI {
     return this;
   }
 
-  public updateNotification = (
-    launchNotification: null | LaunchNotification<Date>
-  ) => {
-    this.activeLaunchNotification = launchNotification;
+  public updateNotification: UpdateNotification = (...parameters) => {
+    this.updateNotificationParameters = parameters;
 
+    const [launchNotification] = parameters;
     const { app, notification } = this;
 
     // Title
     if (launchNotification) {
       (notification.getChildByName("title") as Text).text =
         launchNotification?.title.toUpperCase() || "";
-      (notification.getChildByName("title") as Text).x =
-        app.screen.width / 3 -
-        80 -
-        (notification.getChildByName("title") as Text).width;
 
       // Description
       (notification.getChildByName("description") as Text).text =
         launchNotification?.description.toUpperCase() || "";
-      (notification.getChildByName("description") as Text).x =
-        app.screen.width / 3 -
-        80 -
-        (notification.getChildByName("description") as Text).width;
     }
 
     animate({
@@ -635,14 +633,10 @@ export class UI {
     });
   };
 
-  public updateUI: UpdateUI = ({
-    date,
-    secondsPassed,
-    altitude,
-    speed,
-    stage,
-  }) => {
-    this.latestUIState = { date, secondsPassed, altitude, speed, stage };
+  public updateUI: UpdateUI = (...parameters) => {
+    this.updateUIParameters = parameters;
+
+    const [{ date, altitude, speed, stage }] = parameters;
     const {
       app,
       radius,
@@ -656,10 +650,13 @@ export class UI {
       },
     } = this;
 
-    const angle = (360 / totalSeconds) * secondsPassed;
+    const totalMs = totalSeconds * 1000;
+    const msPassed = differenceInMilliseconds(date, liftoffTime);
+
+    const angle = (360 / totalMs) * msPassed;
     timeline.angle = -angle - 90;
     countdownText.text = getCountdown(liftoffTime, date);
-    setPointsVisibility(date, timelineEvents, radius, totalSeconds);
+    setPointsVisibility(date, timelineEvents, radius, totalMs);
 
     const gaugesUpdaters = stages[stage] || addGauges(app, stage);
     if (!stages[stage]) {
