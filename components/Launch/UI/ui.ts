@@ -528,23 +528,28 @@ export class UI {
     this.launch = launch;
     this.app = createPIXI(canvas);
 
-    // Resize logic
-    const ticker = Ticker.shared;
-    ticker.add(() => {
+    const resize = () => {
       if (doesNeedResize(this.app.renderer)) {
-        this.app.renderer.resize(window.innerWidth, window.innerHeight);
+        this.app.ticker.remove(resize);
+        // this.app.renderer.resize(window.innerWidth, window.innerHeight);
 
+        // Reset
         this.app.destroy();
         this.stages = {};
+
+        // Restart
         this.app = createPIXI(canvas);
-        requestAnimationFrame(() => {
-          this.initialize();
-          this.updateNotification(...this.updateNotificationParameters);
-          if (this.updateUIParameters)
-            this.updateUI(...this.updateUIParameters);
-        });
+        this.app.ticker.add(resize);
+        this.initialize();
+        this.updateNotification(...this.updateNotificationParameters);
+        if (this.updateUIParameters) {
+          this.updateUI(...this.updateUIParameters);
+        }
       }
-    });
+    };
+
+    // Resize logic
+    this.app.ticker.add(resize);
   }
 
   public static async ofElement(

@@ -211,12 +211,7 @@ const Launch = React.memo(function Launch({
         });
       }
     }, delay);
-  }, [
-    playbackRate,
-    data.liftoffTime,
-    data.telemetry.stage,
-    launch.data.notifications,
-  ]);
+  }, [playbackRate, data.telemetry.stage, launch.data.notifications]);
 
   React.useEffect(() => {
     if (interval.current) {
@@ -225,6 +220,12 @@ const Launch = React.memo(function Launch({
     if (isPlaying) {
       start();
     }
+
+    return () => {
+      if (interval.current) {
+        clearInterval(interval.current);
+      }
+    };
   }, [start, isPlaying]);
 
   React.useEffect(() => {
@@ -246,7 +247,7 @@ const Launch = React.memo(function Launch({
 
       const { updateUI, updateNotification } = await UI.ofElement(
         pixiCanvasRef.current as HTMLCanvasElement,
-        window.innerHeight * 0.8,
+        window.innerWidth * 0.5,
         launch
       );
 
