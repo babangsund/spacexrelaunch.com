@@ -8,8 +8,8 @@ import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 
 import styles from "./Launch.module.css";
 import { endPageTransition } from "../transitionPage";
-import { makeVisual, UpdateVisual } from "./3d/visual";
-import { UI, UpdateUI, UpdateNotification } from "./UI/UI";
+import { UI, UpdateUI, UpdateNotification } from "./UI";
+import { makeVisual, UpdateVisual } from "./visualization";
 import { LaunchWithData, Position } from "../../data/launch";
 
 interface LaunchProps {
