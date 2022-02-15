@@ -247,7 +247,6 @@ const Launch = React.memo(function Launch({
 
       const { updateUI, updateNotification } = await UI.ofElement(
         pixiCanvasRef.current as HTMLCanvasElement,
-        window.innerWidth * 0.5,
         launch
       );
 

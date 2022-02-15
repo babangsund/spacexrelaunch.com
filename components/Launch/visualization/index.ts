@@ -67,7 +67,7 @@ function createRenderer(
   height: number,
   canvas: HTMLCanvasElement
 ) {
-  // Rcetina displays have such a high pixel density there is very little visual difference between having AA on/off.
+  // Retina displays have such a high pixel density there is very little visual difference between having AA on/off.
   const antialias = window.devicePixelRatio > 1 ? false : true;
 
   const renderer = new WebGLRenderer({

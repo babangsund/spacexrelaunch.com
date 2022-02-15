@@ -137,10 +137,9 @@ function createPIXI(view: HTMLCanvasElement) {
   const app = new Application({
     view,
     resizeTo: view,
-    backgroundAlpha: 0,
-    //antialias: true || window.devicePixelRatio > 1 ? false : true,
-    autoDensity: true,
     antialias: true,
+    backgroundAlpha: 0,
+    autoDensity: true,
     width: window.innerWidth,
     height: window.innerHeight,
     resolution: window.devicePixelRatio || 1,
@@ -531,20 +530,20 @@ export class UI {
     const resize = () => {
       if (doesNeedResize(this.app.renderer)) {
         this.app.ticker.remove(resize);
-        // this.app.renderer.resize(window.innerWidth, window.innerHeight);
 
         // Reset
         this.app.destroy();
         this.stages = {};
 
         // Restart
+        this.radius = window.innerWidth * 0.5;
         this.app = createPIXI(canvas);
-        this.app.ticker.add(resize);
         this.initialize();
         this.updateNotification(...this.updateNotificationParameters);
         if (this.updateUIParameters) {
           this.updateUI(...this.updateUIParameters);
         }
+        this.app.ticker.add(resize);
       }
     };
 
@@ -554,11 +553,10 @@ export class UI {
 
   public static async ofElement(
     canvas: HTMLCanvasElement,
-    radius: number,
     launch: LaunchWithData<Date>
   ) {
     await fonts;
-    return new UI(canvas, radius, launch).initialize();
+    return new UI(canvas, window.innerWidth * 0.5, launch).initialize();
   }
 
   private initialize() {
