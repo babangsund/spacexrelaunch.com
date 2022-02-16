@@ -46,6 +46,11 @@
     );
   }
 }
+@media (max-width: 768px) {
+  .controls {
+    padding-bottom: 310px;
+  }
+}
 
 .controls > *:not(:last-child) {
   margin-bottom: 40px;

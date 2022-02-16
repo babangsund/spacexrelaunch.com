@@ -314,7 +314,7 @@ function addText(app: Application, name: string) {
   const countdownText = new BitmapText(`T + 00:00:00`, {
     fontName: "BlenderPro500",
     align: "center",
-    fontSize: byScreenSize({ xs: 32, s: 36, m: 40, l: 44, xl: 48 }),
+    fontSize: byScreenSize({ xs: 22, s: 36, m: 40, l: 44, xl: 48 }),
   });
   countdownText.y = 10;
   countdownText.anchor.set(0.5, 0);
@@ -339,7 +339,10 @@ function addText(app: Application, name: string) {
 
 function addNotification(app: Application) {
   const textOffset = byScreenSize({ xs: 15, s: 20, m: 50, l: 20, xl: 70 });
-  const width = app.screen.width / 3;
+  const width = byScreenSize({
+    xs: app.screen.width * 0.54,
+    s: app.screen.width * 0.33,
+  });
   const height = 180;
 
   const notificationContainer = new Container();
@@ -481,7 +484,10 @@ function addGauges(app: Application, stage: 1 | 2) {
     `/images/side-shadow-${stage === 1 ? "left" : "right"}.png`
   );
   shadow.height = 180;
-  shadow.width = app.screen.width / 3;
+  shadow.width = byScreenSize({
+    xs: app.screen.width * 0.54,
+    s: app.screen.width * 0.33,
+  });
   shadow.y = 0;
   shadow.anchor.x = 0.5;
   shadow.x = byStage(stage, [0]);
