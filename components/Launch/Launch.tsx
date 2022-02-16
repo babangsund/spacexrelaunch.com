@@ -44,9 +44,8 @@ const Launch = React.memo(function Launch({
   const pixiCanvasRef = React.useRef<HTMLCanvasElement>(null);
   const threeCanvasRef = React.useRef<HTMLCanvasElement>(null);
 
-  const onUIChange = React.useRef<UpdateUI>(() => {});
+  const ui = React.useRef<UI>();
   const onVisualChange = React.useRef<UpdateVisual>(() => {});
-  const onNotificationChange = React.useRef<UpdateNotification>(() => {});
 
   const date = React.useRef(data.liftoffTime);
   const interval = React.useRef<NodeJS.Timer>();
@@ -99,14 +98,14 @@ const Launch = React.memo(function Launch({
 
       if (notification.current.endsAt) {
         if (date.current >= notification.current.endsAt) {
-          onNotificationChange.current(null);
+          ui.current?.updateNotification(null);
           notification.current.endsAt = new Date();
         }
       }
 
       if (date.current >= notification.current.startsAt) {
         // 1. Remove possibly existing notifications from UI
-        onNotificationChange.current(null);
+        ui.current?.updateNotification(null);
         // 2. Add notification to UI
         const newIndex = notification.current.index;
         const newNotification = launch.data.notifications[newIndex];
@@ -118,7 +117,7 @@ const Launch = React.memo(function Launch({
           startsAt: launch.data.notifications[newIndex + 1]?.time || new Date(),
         };
         setTimeout(() => {
-          onNotificationChange.current(newNotification);
+          ui.current?.updateNotification(newNotification);
         }, 200 / playbackRate);
       }
 
@@ -157,7 +156,7 @@ const Launch = React.memo(function Launch({
               altitude: checkpoint.altitude,
               position: checkpoint.position,
             });
-            onUIChange.current({
+            ui.current?.updateUI({
               stage,
               date: date.current,
               speed: checkpoint.speed,
@@ -203,7 +202,7 @@ const Launch = React.memo(function Launch({
           position: position.slice().reverse() as Position,
         });
 
-        onUIChange.current({
+        ui.current?.updateUI({
           stage,
           date: date.current,
           speed,
@@ -220,13 +219,16 @@ const Launch = React.memo(function Launch({
     if (isPlaying) {
       start();
     }
+  }, [start, isPlaying]);
 
+  React.useEffect(() => {
     return () => {
+      ui.current?.app.destroy();
       if (interval.current) {
         clearInterval(interval.current);
       }
     };
-  }, [start, isPlaying]);
+  }, []);
 
   React.useEffect(() => {
     async function initialize() {
@@ -245,13 +247,10 @@ const Launch = React.memo(function Launch({
         altitudeScale
       );
 
-      const { updateUI, updateNotification } = await UI.ofElement(
+      ui.current = await UI.ofElement(
         pixiCanvasRef.current as HTMLCanvasElement,
         launch
       );
-
-      onUIChange.current = updateUI;
-      onNotificationChange.current = updateNotification;
 
       setTimeout(() => {
         requestAnimationFrame(() => {

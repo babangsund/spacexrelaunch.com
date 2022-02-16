@@ -4,7 +4,7 @@ import differenceInMinutes from "date-fns/differenceInMinutes";
 import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 import {
   Text,
-  Ticker,
+  Loader,
   Sprite,
   Graphics,
   Renderer,
@@ -18,21 +18,29 @@ import {
 import { animate } from "./animate";
 import { makeGauge } from "./gauge";
 import { toRadians } from "../../utils";
+import { byScreenSize } from "../../screenSize";
 import {
   LaunchEvent,
   LaunchNotification,
   LaunchWithData,
 } from "../../../data/launch";
 
+Loader.shared.add("/images/gauge-shadow.png");
+Loader.shared.add("/images/outer-shadow.png");
+Loader.shared.add("/images/side-shadow-left.png");
+Loader.shared.add("/images/side-shadow-right.png");
+
 interface Updaters {
   updateSpeed: Function;
   updateAltitude: Function;
 }
 
-interface StageUpdaters {
-  1?: Updaters;
-  2?: Updaters;
+interface StageEntity<T> {
+  1?: T;
+  2?: T;
 }
+
+type StageUpdaters = StageEntity<Updaters>;
 
 export type UpdateNotification = (
   launchNotification: null | LaunchNotification<Date>
@@ -45,13 +53,6 @@ export type UpdateUI = (data: {
   altitude: number | string;
 }) => void;
 
-const font500 = new FontFaceObserver("Blender Pro", {
-  weight: 500,
-});
-const font700 = new FontFaceObserver("Blender Pro", {
-  weight: 700,
-});
-
 const bitmapCharacters = BitmapFont.ALPHANUMERIC.concat([
   ".",
   "/",
@@ -60,10 +61,23 @@ const bitmapCharacters = BitmapFont.ALPHANUMERIC.concat([
   "-",
 ]);
 
+const font500 = new FontFaceObserver("Blender Pro", {
+  weight: 500,
+});
+const font700 = new FontFaceObserver("Blender Pro", {
+  weight: 700,
+});
+
+const texturesPromise = new Promise((resolve) => {
+  Loader.shared.load(resolve);
+});
+
 const fonts = Promise.all([
+  texturesPromise,
   font500.load(undefined, 30000),
   font700.load(undefined, 30000),
 ]).then(() => {
+  // Create bitmap fonts
   BitmapFont.from(
     "BlenderPro500",
     {
@@ -142,6 +156,7 @@ function createPIXI(view: HTMLCanvasElement) {
     autoDensity: true,
     width: window.innerWidth,
     height: window.innerHeight,
+    powerPreference: "high-performance",
     resolution: window.devicePixelRatio || 1,
   });
 
@@ -204,7 +219,7 @@ function addTimelineEvents(
 
     const text = new BitmapText(event.title, {
       fontName: "BlenderPro700",
-      fontSize: 16,
+      fontSize: byScreenSize({ xs: 8, s: 10, m: 12, l: 14, xl: 16 }),
     });
 
     text.name = "text";
@@ -227,7 +242,8 @@ function addTimelineEvents(
 function addTimeline(app: Application, radius: number) {
   const timelineContainer = new Container();
   timelineContainer.x = app.screen.width / 2;
-  timelineContainer.y = app.screen.height + radius - 150;
+  timelineContainer.y =
+    app.screen.height + radius - byScreenSize({ xs: 110, s: 130, l: 150 });
   app.stage.addChild(timelineContainer);
 
   // Low opacity full circle
@@ -290,15 +306,15 @@ function addTimeline(app: Application, radius: number) {
 
 function addText(app: Application, name: string) {
   const textContainer = new Container();
-  textContainer.y = app.screen.height - 100;
+  textContainer.y = app.screen.height - byScreenSize({ xs: 60, s: 80, l: 100 });
   textContainer.x = app.screen.width / 2;
   app.stage.addChild(textContainer);
 
   // Countdown
-  const countdownText = new BitmapText(`T+ 00:00:00`, {
+  const countdownText = new BitmapText(`T + 00:00:00`, {
     fontName: "BlenderPro500",
     align: "center",
-    fontSize: 48,
+    fontSize: byScreenSize({ xs: 32, s: 36, m: 40, l: 44, xl: 48 }),
   });
   countdownText.y = 10;
   countdownText.anchor.set(0.5, 0);
@@ -307,7 +323,7 @@ function addText(app: Application, name: string) {
   const launchNameText = new BitmapText(name.toUpperCase(), {
     fontName: "BlenderPro500",
     align: "center",
-    fontSize: 20,
+    fontSize: byScreenSize({ xs: 12, s: 14, m: 16, l: 18, xl: 20 }),
   });
 
   launchNameText.y = countdownText.y + countdownText.height;
@@ -322,24 +338,27 @@ function addText(app: Application, name: string) {
 }
 
 function addNotification(app: Application) {
+  const textOffset = byScreenSize({ xs: 15, s: 20, m: 50, l: 20, xl: 70 });
   const width = app.screen.width / 3;
   const height = 180;
 
   const notificationContainer = new Container();
   notificationContainer.width = width;
   notificationContainer.height = height;
-  notificationContainer.y = app.screen.height - height;
+
+  notificationContainer.y = byScreenSize({
+    xs: app.screen.height - height - 60 * 3.5,
+    l: app.screen.height - height,
+  });
   notificationContainer.x = app.screen.width; // Hide by default
   notificationContainer.alpha = 0; // Hide by default
   app.stage.addChild(notificationContainer);
 
-  // Add shadow behind gauges
-  const shadow = Sprite.from("/images/side-shadow.png");
+  // Add shadow behind notification
+  const shadow = Sprite.from("/images/side-shadow-right.png");
   shadow.width = width;
   shadow.height = height;
-  // Mirror the sprite
-  shadow.scale.x *= -1;
-  shadow.x = shadow.width;
+  shadow.x = 0;
   notificationContainer.addChild(shadow);
 
   // Title
@@ -352,7 +371,7 @@ function addNotification(app: Application) {
   });
   title.name = "title";
   title.y = 10;
-  title.x = width - 80;
+  title.x = width - textOffset;
   title.anchor.x = 1;
   notificationContainer.addChild(title);
 
@@ -368,7 +387,7 @@ function addNotification(app: Application) {
   });
   description.name = "description";
   description.y = 10 + title.height + 5;
-  description.x = width - 80;
+  description.x = width - textOffset;
   description.anchor.x = 1;
   notificationContainer.addChild(description);
 
@@ -376,14 +395,41 @@ function addNotification(app: Application) {
 }
 
 function addGauges(app: Application, stage: 1 | 2) {
+  function byStage(stage: 1 | 2, values: number[]) {
+    if (stage === 1) {
+      return values.reduce((p, c) => p + c, 0);
+    } else {
+      return values.reduce((p, c) => p - c, app.screen.width);
+    }
+  }
+
+  // l = horizontal
+  // m = vertical
+  const horizontalOffset = byScreenSize({
+    xs: 15,
+    s: 20,
+    m: 50,
+    l: 20,
+    xl: 70,
+  });
+  const gaugeRadius = 60;
+  const gaugeWidth = gaugeRadius * 2;
+  const secondGaugeOffset = byScreenSize({
+    xs: 10,
+    s: 15,
+    m: 15,
+    l: 20,
+    xl: 20,
+  });
+  const gaugesWidth = gaugeWidth * 2 + secondGaugeOffset;
+
   const container = new Container();
   container.y = app.screen.height - 180;
 
+  // Gauges
   const gauges = new Container();
-  gauges.y = 20;
-
   const { gauge: speedGauge, onUpdate: onUpdateSpeedGauge } = makeGauge({
-    radius: 60,
+    radius: gaugeRadius,
     min: 0,
     max: 30000,
     value: 0,
@@ -393,64 +439,76 @@ function addGauges(app: Application, stage: 1 | 2) {
   gauges.addChild(speedGauge);
 
   const { gauge: altGauge, onUpdate: onUpdateAltGauge } = makeGauge({
-    radius: 60,
+    radius: gaugeRadius,
     min: 0,
     max: 600,
     value: 0,
     unit: "KM",
     name: "ALTITUDE",
   });
-  altGauge.x = 140;
   gauges.addChild(altGauge);
 
+  gauges.y = 20;
+  gauges.pivot.x = gaugesWidth / 2;
+  gauges.x = byStage(stage, [horizontalOffset, gaugesWidth / 2]);
+
+  // Title
   const title = new BitmapText(`STAGE ${stage} TELEMETRY`, {
     fontName: "BlenderPro700",
     align: "center",
     fontSize: 16,
   });
+  title.anchor.x = 0.5;
+  title.x = byStage(stage, [horizontalOffset, gaugesWidth / 2]);
+  title.transform.position.y = 140;
   title.alpha = 0;
-  title.y = 140;
   animate({
     startValue: title,
-    endValue: { y: 120, alpha: 1 },
+    endValue: {
+      alpha: 1,
+      transform: {
+        position: {
+          y: 120,
+        },
+      } as any,
+    },
     durationMs: 200,
     delayMs: 300,
   });
 
-  // Add shadow behind gauges
-  const shadow = Sprite.from("/images/side-shadow.png");
-  //shadow.anchor.set(0.5);
-  shadow.width = app.screen.width / 3;
+  // Shadow
+  const shadow = Sprite.from(
+    `/images/side-shadow-${stage === 1 ? "left" : "right"}.png`
+  );
   shadow.height = 180;
-  shadow.x = app.screen.width;
+  shadow.width = app.screen.width / 3;
   shadow.y = 0;
+  shadow.anchor.x = 0.5;
+  shadow.x = byStage(stage, [0]);
+  animate({
+    startValue: shadow,
+    endValue: { x: byStage(stage, [shadow.width / 2]) },
+    durationMs: 400,
+    delayMs: 0,
+  });
 
-  // Stage 2
-  if (stage === 2) {
-    shadow.scale.x *= -1; // Mirror
-    gauges.x = app.screen.width - gauges.width - 140;
-    title.x = app.screen.width - title.width - 130;
-    shadow.x = app.screen.width + shadow.width;
-    animate({
-      startValue: shadow,
-      endValue: { x: app.screen.width },
-      durationMs: 500,
-      delayMs: 0,
-    });
-  }
-  // Stage 1
-  else {
-    shadow.x = 0;
-    gauges.x = 70;
-    title.x = 60 + title.width / 2;
-    shadow.x = -shadow.width;
-    animate({
-      startValue: shadow,
-      endValue: { x: 0 },
-      durationMs: 500,
-      delayMs: 0,
-    });
-  }
+  const xsConfig = () => {
+    shadow.y = -gaugeWidth;
+    altGauge.y = -gaugeWidth;
+    gauges.pivot.x = gaugeWidth / 2;
+    gauges.x = byStage(stage, [horizontalOffset, gaugeWidth / 2]);
+    title.x = byStage(stage, [horizontalOffset, gaugeWidth / 2]);
+    container.y = app.screen.height - 180 - gaugeWidth * 0.75;
+  };
+
+  const lConfig = () => {
+    altGauge.x = gaugeWidth + secondGaugeOffset;
+  };
+
+  byScreenSize({
+    xs: xsConfig,
+    l: lConfig,
+  })();
 
   app.stage.addChild(container);
   container.addChild(shadow);
@@ -515,7 +573,7 @@ export class UI {
 
   totalMs = 0;
   totalSeconds = 0;
-  updateUIParameters: Parameters<UpdateUI> | null = null;
+  updateUIParameters: StageEntity<Parameters<UpdateUI>> = {};
   updateNotificationParameters: Parameters<UpdateNotification> = [null];
 
   constructor(
@@ -536,12 +594,15 @@ export class UI {
         this.stages = {};
 
         // Restart
-        this.radius = window.innerWidth * 0.5;
+        this.radius = Math.max(window.innerWidth, window.innerHeight) * 0.5;
         this.app = createPIXI(canvas);
         this.initialize();
         this.updateNotification(...this.updateNotificationParameters);
-        if (this.updateUIParameters) {
-          this.updateUI(...this.updateUIParameters);
+        if (this.updateUIParameters[1]) {
+          this.updateUI(...this.updateUIParameters[1]);
+        }
+        if (this.updateUIParameters[2]) {
+          this.updateUI(...this.updateUIParameters[2]);
         }
         this.app.ticker.add(resize);
       }
@@ -632,9 +693,8 @@ export class UI {
   };
 
   public updateUI: UpdateUI = (...parameters) => {
-    this.updateUIParameters = parameters;
-
     const [{ date, altitude, speed, stage }] = parameters;
+    this.updateUIParameters[stage] = parameters;
     const {
       app,
       radius,

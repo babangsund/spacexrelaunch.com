@@ -8,6 +8,12 @@
   transform: translateY(-50%);
 }
 
+@media (max-width: 1200px) {
+  .social {
+    padding-bottom: 200px;
+  }
+}
+
 .link {
   height: 40px;
   padding: 8px;

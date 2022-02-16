@@ -1,7 +1,7 @@
-import { toRadians, convertRelativeScale } from "../../utils";
+import { Sprite, Graphics, Container, BitmapText } from "pixi.js";
 
-import { BitmapText, Container, Graphics, Sprite, Text, Ticker } from "pixi.js";
 import { animate } from "./animate";
+import { toRadians, convertRelativeScale } from "../../utils";
 
 interface MakeGauge {
   min: number;
@@ -16,11 +16,12 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
   const gaugeContainer = new Container();
 
   const shadow = Sprite.from("/images/gauge-shadow.png");
+
   shadow.anchor.set(0.5);
-  shadow.width = radius * 2 + 10;
-  shadow.height = radius * 2 + 10;
   shadow.x = radius;
   shadow.y = radius;
+  shadow.width = radius * 2 + 10;
+  shadow.height = radius * 2 + 10;
   gaugeContainer.addChild(shadow);
 
   const gauge = new Container();
@@ -100,35 +101,40 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
   // 5. Enter Stage N telemetry text
 
   // 1
-  shadow.scale.set(0, 0);
+  const scaleTo = { x: shadow.transform.scale.x, y: shadow.transform.scale.y };
+  shadow.transform.scale.set(0, 0);
   animate({
-    startValue: shadow.scale,
-    endValue: { x: 0.26, y: 0.26 },
+    startValue: shadow.transform.scale,
+    endValue: scaleTo,
     durationMs: 500,
     delayMs: 0,
   });
 
   // 2
   gaugeNameText.alpha = 0;
-  gaugeNameText.position.y -= 20;
+  gaugeNameText.transform.position.y -= 20;
   animate({
     startValue: gaugeNameText,
     endValue: {
-      position: { y: gaugeNameText.position.y + 20 },
       alpha: 1,
-    } as any,
+      transform: {
+        position: { y: gaugeNameText.transform.position.y + 20 },
+      } as any,
+    },
     durationMs: 500,
     delayMs: 20,
   });
 
   // 2
   gaugeUnitText.alpha = 0;
-  gaugeUnitText.position.y += 20;
+  gaugeUnitText.transform.position.y += 20;
   animate({
     startValue: gaugeUnitText,
     endValue: {
-      position: { y: gaugeUnitText.position.y - 20 },
       alpha: 1,
+      transform: {
+        position: { y: gaugeUnitText.transform.position.y - 20 },
+      },
     } as any,
     durationMs: 500,
     delayMs: 20,

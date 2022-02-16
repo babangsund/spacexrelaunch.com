@@ -36,6 +36,17 @@
   background: linear-gradient(90deg, #000000 0%, rgba(0, 0, 0, 0) 100%);
 }
 
+@media (max-width: 1200px) {
+  .controls {
+    padding-bottom: 240px;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.2) 0%,
+      rgba(0, 0, 0, 0) 100%
+    );
+  }
+}
+
 .controls > *:not(:last-child) {
   margin-bottom: 40px;
 }

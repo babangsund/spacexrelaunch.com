@@ -140,7 +140,13 @@ export const PreloadLinks = (
       crossOrigin="anonymous"
       rel="preload"
       as="image"
-      href="/images/side-shadow.png"
+      href="/images/side-shadow-left.png"
+    />
+    <link
+      crossOrigin="anonymous"
+      rel="preload"
+      as="image"
+      href="/images/side-shadow-right.png"
     />
     <link
       crossOrigin="anonymous"
