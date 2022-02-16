@@ -36,22 +36,6 @@
   background: linear-gradient(90deg, #000000 0%, rgba(0, 0, 0, 0) 100%);
 }
 
-@media (max-width: 1200px) {
-  .controls {
-    padding-bottom: 240px;
-    background: linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.2) 0%,
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-}
-@media (max-width: 768px) {
-  .controls {
-    padding-bottom: 310px;
-  }
-}
-
 .controls > *:not(:last-child) {
   margin-bottom: 40px;
 }
@@ -84,4 +68,23 @@
   height: 50px;
   position: relative;
   transform: translate(-50%, -50%);
+}
+
+@media (max-width: 1200px) {
+  .controls {
+    padding-bottom: 240px;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.2) 0%,
+      rgba(0, 0, 0, 0) 100%
+    );
+  }
+}
+@media (max-width: 768px) {
+  .controls {
+    padding-bottom: 320px;
+  }
+  .controls > *:not(:last-child) {
+    margin-bottom: 20px;
+  }
 }

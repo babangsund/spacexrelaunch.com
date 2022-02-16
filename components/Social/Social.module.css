@@ -8,17 +8,6 @@
   transform: translateY(-50%);
 }
 
-@media (max-width: 1200px) {
-  .social {
-    padding-bottom: 200px;
-  }
-}
-@media (max-width: 768px) {
-  .controls {
-    padding-bottom: 270px;
-  }
-}
-
 .link {
   height: 40px;
   padding: 8px;
@@ -33,4 +22,18 @@
 
 .social > .link:not(:last-child) {
   margin-bottom: 40px;
+}
+
+@media (max-width: 1200px) {
+  .social {
+    padding-bottom: 200px;
+  }
+}
+@media (max-width: 768px) {
+  .social {
+    padding-bottom: 280px;
+  }
+  .social > .link:not(:last-child) {
+    margin-bottom: 20px;
+  }
 }
