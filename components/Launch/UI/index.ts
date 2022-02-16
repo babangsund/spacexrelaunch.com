@@ -25,11 +25,6 @@ import {
   LaunchWithData,
 } from "../../../data/launch";
 
-Loader.shared.add("/images/gauge-shadow.png");
-Loader.shared.add("/images/outer-shadow.png");
-Loader.shared.add("/images/side-shadow-left.png");
-Loader.shared.add("/images/side-shadow-right.png");
-
 interface Updaters {
   updateSpeed: Function;
   updateAltitude: Function;
@@ -53,31 +48,15 @@ export type UpdateUI = (data: {
   altitude: number | string;
 }) => void;
 
-const bitmapCharacters = BitmapFont.ALPHANUMERIC.concat([
-  ".",
-  "/",
-  "+",
-  ":",
-  "-",
-]);
+function loadBitmapFonts() {
+  const bitmapCharacters = BitmapFont.ALPHANUMERIC.concat([
+    ".",
+    "/",
+    "+",
+    ":",
+    "-",
+  ]);
 
-const font500 = new FontFaceObserver("Blender Pro", {
-  weight: 500,
-});
-const font700 = new FontFaceObserver("Blender Pro", {
-  weight: 700,
-});
-
-const texturesPromise = new Promise((resolve) => {
-  Loader.shared.load(resolve);
-});
-
-const fonts = Promise.all([
-  texturesPromise,
-  font500.load(undefined, 30000),
-  font700.load(undefined, 30000),
-]).then(() => {
-  // Create bitmap fonts
   BitmapFont.from(
     "BlenderPro500",
     {
@@ -89,7 +68,6 @@ const fonts = Promise.all([
     },
     { chars: bitmapCharacters }
   );
-
   BitmapFont.from(
     "BlenderPro700",
     {
@@ -101,7 +79,26 @@ const fonts = Promise.all([
     },
     { chars: bitmapCharacters }
   );
+}
+
+const fontsPromise = Promise.all([
+  new FontFaceObserver("Blender Pro", {
+    weight: 500,
+  }).load(undefined, 30000),
+  new FontFaceObserver("Blender Pro", {
+    weight: 700,
+  }).load(undefined, 30000),
+]).then(loadBitmapFonts);
+
+Loader.shared.add("/images/gauge-shadow.png");
+Loader.shared.add("/images/outer-shadow.png");
+Loader.shared.add("/images/side-shadow-left.png");
+Loader.shared.add("/images/side-shadow-right.png");
+const texturesPromise = new Promise((resolve) => {
+  Loader.shared.load(resolve);
 });
+
+const resourcesPromise = Promise.all([fontsPromise, texturesPromise]);
 
 function getTimelineAlpha(angle: number) {
   if (angle > 180) {
@@ -622,7 +619,7 @@ export class UI {
     canvas: HTMLCanvasElement,
     launch: LaunchWithData<Date>
   ) {
-    await fonts;
+    await resourcesPromise;
     return new UI(canvas, window.innerWidth * 0.5, launch).initialize();
   }
 
