@@ -101,7 +101,7 @@
   border: none;
   position: absolute;
   height: 1px;
-  width: 5vh; /* 50px */
+  width: 5vh;
   background-color: #fff;
   opacity: 0.3;
 
@@ -250,6 +250,12 @@
   .button {
     font-size: 28px;
   }
+
+  .hr {
+    width: 22.5vh;
+    transform: rotate(90deg) translate(calc(38vh), calc(22.5vh / 2))
+      rotate(0deg);
+  }
 }
 
 @media (max-width: 767.98px) {
@@ -312,5 +318,9 @@
   .dot {
     width: 5px;
     height: 5px;
+  }
+
+  .hr {
+    display: none;
   }
 }
