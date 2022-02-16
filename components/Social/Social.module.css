@@ -24,12 +24,12 @@
   margin-bottom: 40px;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1199.98px) {
   .social {
     padding-bottom: 200px;
   }
 }
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .social {
     padding-bottom: 280px;
   }

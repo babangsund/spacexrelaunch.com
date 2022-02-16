@@ -1,27 +1,24 @@
-type ScreenSize = "xl" | "l" | "m" | "s" | "xs";
+import React from "react";
 
-function getScreenSize(): ScreenSize {
-  const screenWidth = window.innerWidth;
+export type ScreenSize = "xl" | "l" | "m" | "s" | "xs";
 
-  if (screenWidth >= 1400) {
+function getScreenSize(screenWidth = window.innerWidth): ScreenSize {
+  if (screenWidth > 1399.98) {
     return "xl";
   }
 
-  if (screenWidth >= 1200) {
+  if (screenWidth > 1199.98) {
     return "l";
   }
 
-  // If smaller than 1200
-  if (screenWidth >= 992) {
+  if (screenWidth > 991.98) {
     return "m";
   }
 
-  // If smaller than 992
-  if (screenWidth >= 768) {
+  if (screenWidth > 767.98) {
     return "s";
   }
 
-  // if smaller than 768
   return "xs";
 }
 
@@ -31,24 +28,78 @@ interface ByScreenSize<T> {
   m?: T;
   l?: T;
   xl?: T;
+  screenSize?: ScreenSize;
 }
 
 export function byScreenSize<T>({
+  screenSize = getScreenSize(window.innerWidth),
   xs,
   s = xs,
   m = s || xs,
   l = m || s || xs,
   xl = l || m || s || xs,
 }: ByScreenSize<T>) {
-  const screenSize = getScreenSize();
-  const isXS = screenSize === "xs";
-  const isSmall = screenSize === "s";
-  const isMedium = screenSize === "m";
-  const isLarge = screenSize === "l";
+  switch (screenSize) {
+    case "xs":
+      return xs;
+    case "s":
+      return s;
+    case "m":
+      return m;
+    case "l":
+      return l;
+    default:
+      return xl;
+  }
+}
 
-  if (isXS) return xs;
-  if (isXS || isSmall) return s;
-  if (isMedium) return m;
-  if (isLarge) return l;
-  return xl;
+export function useResizeObserver<TElement extends HTMLElement>(): [
+  React.MutableRefObject<TElement | null>,
+  number
+] {
+  const ref = React.useRef<TElement>(null);
+  const [width, setWidth] = React.useState(0);
+
+  React.useEffect(() => {
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        if (entry.contentBoxSize) {
+          // Firefox implements `contentBoxSize` as a single content rect, rather than an array
+          const contentBoxSize: ResizeObserverSize = Array.isArray(
+            entry.contentBoxSize
+          )
+            ? entry.contentBoxSize[0]
+            : entry.contentBoxSize;
+
+          setWidth(contentBoxSize.inlineSize);
+        } else {
+          setWidth(entry.contentRect.width);
+        }
+      }
+    });
+
+    if (ref.current) {
+      resizeObserver.observe(ref.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  return [ref, width];
+}
+
+export function useScreenSize<TElement extends HTMLElement>(): [
+  React.MutableRefObject<TElement | null>,
+  ScreenSize
+] {
+  const [ref, width] = useResizeObserver<TElement>();
+  const [screenSize, setScreenSize] = React.useState<ScreenSize>("xl");
+
+  React.useEffect(() => {
+    setScreenSize(getScreenSize(width));
+  }, [width]);
+
+  return [ref, screenSize];
 }

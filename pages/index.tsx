@@ -16,6 +16,12 @@ import {
   startPageTransition,
 } from "../components/transitionPage";
 import Meta from "../components/Meta/Meta";
+import {
+  byScreenSize,
+  ScreenSize,
+  useResizeObserver,
+  useScreenSize,
+} from "../components/screenSize";
 
 export async function getStaticProps() {
   const launches = getLaunches();
@@ -64,9 +70,46 @@ function DisplayDate({ dateTime, timeZone }: DateTimeProps) {
   return <TransitionValue value={dateString} />;
 }
 
-function createRotationStyle(angle: number) {
+function rotateStat(angle: number, screenSize: ScreenSize) {
+  const translate = byScreenSize({
+    screenSize,
+    xs: "100px",
+    s: "15vh",
+    l: "30vh",
+  });
+  // 1440+: 30vh
+  // 768: 18vh
   return {
-    transform: `rotate(${angle}deg) translate(30vh) rotate(-${angle}deg)`,
+    transform: `rotate(${angle}deg) translate(${translate}) rotate(-${angle}deg)`,
+  };
+}
+
+function rotateLaunch(angle: number, screenSize: ScreenSize) {
+  const translate = byScreenSize({
+    screenSize,
+    xs: "21vh",
+    s: "33vh",
+    l: "45vh",
+  });
+  // 1440+: 45vh
+  // 768: 32vh
+  return {
+    transform: `rotate(${angle}deg) translate(${translate}) rotate(180deg)`,
+  };
+}
+
+function rotateDot(angle: number, screenSize: ScreenSize) {
+  const translate = byScreenSize({
+    screenSize,
+    // Half of inner
+    xs: "12.5vh",
+    s: "22.5vh",
+    l: "32.5vh",
+  });
+  // 1440+: 32.5vh
+  // 768: 22.5vh
+  return {
+    transform: `rotate(${angle}deg) translate(${translate})`,
   };
 }
 
@@ -123,11 +166,12 @@ interface StatProps {
   name: React.ReactNode;
   unit: React.ReactNode;
   value: React.ReactNode;
+  screenSize: ScreenSize;
 }
 
-export function Stat({ angle, name, unit, value }: StatProps) {
+export function Stat({ angle, name, unit, value, screenSize }: StatProps) {
   return (
-    <li style={createRotationStyle(angle)} className={styles.stat}>
+    <li style={rotateStat(angle, screenSize)} className={styles.stat}>
       <h2>{value}</h2>
       <p>{name}</p>
       <small>{unit}</small>
@@ -136,13 +180,15 @@ export function Stat({ angle, name, unit, value }: StatProps) {
 }
 
 interface StatsProps {
+  screenSize: ScreenSize;
   launchSummary: LaunchSummary;
 }
 
-function Stats({ launchSummary }: StatsProps) {
+function Stats({ screenSize, launchSummary }: StatsProps) {
   return (
     <ul className={styles.stats}>
       <Stat
+        screenSize={screenSize}
         name="Liftoff"
         angle={(90 / 4) * 0}
         value={
@@ -159,21 +205,24 @@ function Stats({ launchSummary }: StatsProps) {
         }
       />
       <Stat
+        screenSize={screenSize}
         unit=""
         name="Site"
         angle={(90 / 4) * 1}
         value={<TransitionValue value={launchSummary.stats.site} />}
       />
       <Stat
+        screenSize={screenSize}
         unit="KM/H"
         name="Speed"
         angle={(90 / 4) * 2}
         value={<TransitionValue value={launchSummary.stats.speed.toString()} />}
       />
       <Stat
+        screenSize={screenSize}
         unit="KM"
         name="Altitude"
-        angle={(90 / 4) * 3}
+        angle={(95 / 4) * 3}
         value={
           <TransitionValue value={launchSummary.stats.altitude.toString()} />
         }
@@ -191,6 +240,8 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
   const router = useRouter();
   const mounted = useMounted();
 
+  const [ref, screenSize] = useScreenSize();
+
   React.useEffect(() => {
     endPageTransition();
   }, []);
@@ -201,7 +252,7 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
 
       <Header />
 
-      <main className={styles.main}>
+      <main className={styles.main} ref={ref}>
         <section className={styles.container}>
           <div className={styles.images}>
             <img
@@ -226,16 +277,15 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
             <hr className={styles.hr} aria-hidden="true" />
           </div>
 
-          <Stats launchSummary={selectedLaunch} />
+          <Stats screenSize={screenSize} launchSummary={selectedLaunch} />
 
           <div className={styles.dotContainer} aria-hidden="true">
             <div
               className={styles.dot}
-              style={{
-                transform: `rotate(${
-                  180 + (75 / launches.length) * selectedIndex + 1.5
-                }deg) translate(calc(32.5vh))`,
-              }}
+              style={rotateDot(
+                180 + (75 / launches.length) * selectedIndex + 1.5,
+                screenSize
+              )}
             />
           </div>
 
@@ -256,11 +306,10 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
                       selectedLaunch: launch,
                     });
                   }}
-                  style={{
-                    transform: `rotate(${
-                      180 + (75 / launches.length) * i
-                    }deg) translate(45vh) rotate(180deg)`,
-                  }}
+                  style={rotateLaunch(
+                    180 + (75 / launches.length) * i,
+                    screenSize
+                  )}
                 >
                   {launch.name}
                 </li>

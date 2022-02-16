@@ -32,20 +32,6 @@
   background-image: url("/images/stars.png");
 }
 
-.launches {
-  margin: 0;
-  list-style-type: none;
-
-  margin: 0 auto;
-  position: absolute;
-  padding: 0;
-  width: 0;
-  height: 0;
-  /* 26px is the height of an LI */
-  /* 100px is half the width of an LI */
-  transform: translate(-100px, -26px);
-}
-
 .container {
   margin: 0 auto;
   position: relative;
@@ -59,8 +45,8 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: calc(65vh);
-  height: calc(65vh);
+  width: 65vh;
+  height: 65vh;
   transform: translate(-50%, -50%);
 }
 
@@ -139,6 +125,20 @@
   cursor: pointer;
 }
 
+.launches {
+  margin: 0;
+  list-style-type: none;
+
+  margin: 0 auto;
+  position: absolute;
+  padding: 0;
+  width: 0;
+  height: 0;
+  /* 26px is the height of an LI */
+  /* 100px is half the width of an LI */
+  transform: translate(-100px, -26px);
+}
+
 .launch {
   margin: 0;
   list-style: none;
@@ -179,16 +179,16 @@
   margin: 0;
 }
 
-.stats h2 {
+.stat h2 {
   font-size: 24px;
   font-weight: 700;
 }
 
-.stats p {
+.stat p {
   font-weight: 500;
 }
 
-.stats small {
+.stat small {
   font-weight: 300;
 }
 
@@ -204,4 +204,113 @@
   will-change: transform;
   background-color: #fff;
   transition: transform 300ms;
+}
+
+@media (max-width: 1199.98px) {
+  /* Images */
+  .inner {
+    width: 45vh;
+    height: 45vh;
+  }
+  .outer {
+    width: 55vh;
+    height: 55vh;
+  }
+  .shadow,
+  .background {
+    width: 35vh;
+    height: 35vh;
+  }
+
+  /* Launches */
+  .launches {
+    /* 26px is the height of an LI */
+    /* 100px is half the width of an LI */
+    transform: translate(-75px, -18px);
+  }
+  .launch {
+    width: 150px;
+    font-size: 18px;
+  }
+
+  /* Stats */
+  .stat h2 {
+    /*font-size: 24px;*/
+    font-size: 16.8px;
+  }
+
+  .stat p {
+    font-size: 11.2px;
+  }
+
+  .stat small {
+    font-size: 9.33px;
+  }
+
+  .button {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  /* Images */
+  .inner {
+    width: 25vh;
+    height: 25vh;
+  }
+  .outer {
+    width: 90vw;
+    height: 90vw;
+  }
+  .shadow,
+  .background {
+    width: 15vh;
+    height: 15vh;
+  }
+
+  /* Launches */
+  .launches {
+    /* 26px is the height of an LI */
+    /* 100px is half the width of an LI */
+    transform: translate(-50px, -12px);
+  }
+  .launch {
+    width: 100px;
+    font-size: 12px;
+  }
+
+  .stat {
+    width: 50px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Stats */
+  .stat h2 {
+    /*font-size: 24px;*/
+    font-size: 12px;
+  }
+
+  .stat p {
+    font-size: 8px;
+  }
+
+  .stat small {
+    font-size: 6.66px;
+  }
+
+  .button {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .dotContainer {
+    position: absolute;
+    transform: translate(-2.5px, -2.5px);
+  }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+  }
 }

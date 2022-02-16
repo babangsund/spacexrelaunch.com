@@ -70,7 +70,7 @@
   transform: translate(-50%, -50%);
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1199.98px) {
   .controls {
     padding-bottom: 240px;
     background: linear-gradient(
@@ -80,7 +80,7 @@
     );
   }
 }
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .controls {
     padding-bottom: 320px;
   }
