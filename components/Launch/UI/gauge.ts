@@ -10,9 +10,10 @@ interface MakeGauge {
   unit: string;
   value: number;
   radius: number;
+  enterDelayMs?: number;
 }
 
-export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
+export function makeGauge({ radius, name, unit, min, max, value, enterDelayMs = 0 }: MakeGauge) {
   const gaugeContainer = new Container();
 
   const shadow = Sprite.from("/images/gauge-shadow.png");
@@ -30,15 +31,15 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
 
   gaugeContainer.addChild(gauge);
 
-  const mask = createMask(radius);
+  const mask = createMask({ radius, enterDelayMs });
   gaugeMeter.mask = mask;
   gauge.addChild(mask);
 
   // Base
-  const baseGauge = createGauge(
-    undefined,
+  const baseGauge = createGauge({
     radius,
-    [
+    width: 10,
+    steps: [
       {
         startAngle: toRadians(180 - 25),
         endAngle: toRadians(-25),
@@ -50,18 +51,13 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
         color: 0xff0000,
       },
     ],
-    10
-  );
+  });
   baseGauge.alpha = 0.5;
   gaugeMeter.addChild(baseGauge);
 
   function getSections(value: number) {
     // Value
-    const valueInDegrees = convertRelativeScale(
-      value,
-      [min, max],
-      [-180 + -25, 25]
-    );
+    const valueInDegrees = convertRelativeScale(value, [min, max], [-180 + -25, 25]);
 
     const sections = [
       {
@@ -82,7 +78,7 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
     return sections;
   }
 
-  const gaugeValue = createGauge(undefined, radius, getSections(value), 10);
+  const gaugeValue = createGauge({ radius, steps: getSections(value), width: 10 });
   gaugeMeter.addChild(gaugeValue);
 
   const { gaugeValueText, gaugeNameText, gaugeUnitText } = addText({
@@ -106,8 +102,8 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
   animate({
     startValue: shadow.transform.scale,
     endValue: scaleTo,
-    durationMs: 500,
-    delayMs: 0,
+    durationMs: 250,
+    delayMs: enterDelayMs,
   });
 
   // 2
@@ -121,8 +117,8 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
         position: { y: gaugeNameText.transform.position.y + 20 },
       } as any,
     },
-    durationMs: 500,
-    delayMs: 20,
+    durationMs: 250,
+    delayMs: enterDelayMs + 30,
   });
 
   // 2
@@ -137,7 +133,7 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
       },
     } as any,
     durationMs: 500,
-    delayMs: 20,
+    delayMs: enterDelayMs + 20,
   });
 
   // 3
@@ -146,7 +142,7 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
     startValue: gaugeValueText,
     endValue: { alpha: 1 },
     durationMs: 500,
-    delayMs: 30,
+    delayMs: enterDelayMs + 30,
   });
 
   return {
@@ -155,7 +151,12 @@ export function makeGauge({ radius, name, unit, min, max, value }: MakeGauge) {
       gaugeValue.clear();
 
       gaugeValueText.text = String(value);
-      createGauge(gaugeValue, radius, getSections(Number(value)), 10);
+      createGauge({
+        gauge: gaugeValue,
+        radius,
+        steps: getSections(Number(value)),
+        width: 10,
+      });
     },
   };
 }
@@ -166,13 +167,15 @@ interface Step {
   color: number;
 }
 
+interface CreateGauge {
+  gauge?: Graphics;
+  radius: number;
+  steps: Step[];
+  width?: number;
+}
+
 // Gauges
-function createGauge(
-  gauge = new Graphics(),
-  radius: number,
-  steps: Step[],
-  width = 4
-) {
+function createGauge({ gauge = new Graphics(), radius, steps, width = 4 }: CreateGauge) {
   steps.forEach(({ startAngle, endAngle, color }) => {
     gauge.lineStyle(width, color, 1, 0);
     gauge.arc(radius, radius, radius, startAngle, endAngle);
@@ -182,19 +185,27 @@ function createGauge(
   return gauge;
 }
 
-function createMask(radius: number) {
+interface CreateMask {
+  radius: number;
+  enterDelayMs?: number;
+}
+
+function createMask({ radius, enterDelayMs = 0 }: CreateMask) {
   const mask = new Graphics();
 
+  mask.alpha = 0;
+
   animate({
-    startValue: { angle: toRadians(180 - 25) },
-    endValue: { angle: toRadians(360 + 25) },
-    durationMs: 500,
-    delayMs: 50,
-    onUpdate: ({ angle }) => {
+    startValue: { alpha: 0, angle: toRadians(180 - 25) },
+    endValue: { alpha: 1, angle: toRadians(360 + 25) },
+    durationMs: 300,
+    delayMs: enterDelayMs + 200,
+    onUpdate: ({ angle, alpha }) => {
       mask.clear();
       mask.lineStyle(4, 0xffffff, 1, 0);
       mask.arc(radius, radius, radius, toRadians(180 - 25), angle);
       mask.endFill();
+      mask.alpha = alpha;
     },
     onStart: () => {
       const startTick = new Graphics();

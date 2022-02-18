@@ -19,27 +19,23 @@ import { animate } from "./animate";
 import { makeGauge } from "./gauge";
 import { toRadians } from "../../utils";
 import { byScreenSize } from "../../screenSize";
-import {
-  LaunchEvent,
-  LaunchNotification,
-  LaunchWithData,
-} from "../../../data/launch";
+import { LaunchEvent, LaunchNotification, LaunchWithData } from "../../../data/launch";
+import sub from "date-fns/sub";
+import add from "date-fns/add";
 
 interface Updaters {
   updateSpeed: Function;
   updateAltitude: Function;
 }
 
-interface StageEntity<T> {
+interface ByStage<T> {
   1?: T;
   2?: T;
 }
 
-type StageUpdaters = StageEntity<Updaters>;
+type StageUpdaters = ByStage<Updaters>;
 
-export type UpdateNotification = (
-  launchNotification: null | LaunchNotification<Date>
-) => void;
+export type UpdateNotification = (launchNotification: null | LaunchNotification<Date>) => void;
 
 export type UpdateUI = (data: {
   stage: 1 | 2;
@@ -49,13 +45,7 @@ export type UpdateUI = (data: {
 }) => void;
 
 function loadBitmapFonts() {
-  const bitmapCharacters = BitmapFont.ALPHANUMERIC.concat([
-    ".",
-    "/",
-    "+",
-    ":",
-    "-",
-  ]);
+  const bitmapCharacters = BitmapFont.ALPHANUMERIC.concat([".", "/", "+", ":", "-"]);
 
   BitmapFont.from(
     "BlenderPro500",
@@ -111,8 +101,7 @@ function doesNeedResize(renderer: Renderer | AbstractRenderer) {
   const canvas = renderer.view;
   const width = window.innerWidth;
   const height = window.innerHeight;
-  const needResize =
-    canvas.clientWidth !== width || canvas.clientHeight !== height;
+  const needResize = canvas.clientWidth !== width || canvas.clientHeight !== height;
 
   return needResize;
 }
@@ -128,9 +117,7 @@ function getCountdown(startDate: Date, endDate: Date) {
   const minutes = Math.floor(minutesLeft - hours * 60);
   const seconds = secondsLeft - hours * 3600 - minutes * 60;
 
-  return `T + ${toTwoDigit(hours)}:${toTwoDigit(minutes)}:${toTwoDigit(
-    seconds
-  )}`;
+  return `T + ${toTwoDigit(hours)}:${toTwoDigit(minutes)}:${toTwoDigit(seconds)}`;
 }
 
 function getPositionOnTimeline(radius: number, total: number, part: number) {
@@ -167,6 +154,7 @@ interface TimelineEvent {
   cpContainer: Container;
 }
 
+// TODO: Set visible events by event
 function addTimelineEvents(
   events: LaunchEvent<Date>[],
   totalMs: number,
@@ -222,9 +210,7 @@ function addTimelineEvents(
     text.name = "text";
 
     text.angle = 90;
-    text.x = isAbove
-      ? lineHeight * 2 + text.height
-      : -(lineHeight + text.height / 2);
+    text.x = isAbove ? lineHeight * 2 + text.height : -(lineHeight + text.height / 2);
     text.y = -(text.width / 2);
 
     cpContainer.addChild(circle, text, line);
@@ -239,8 +225,7 @@ function addTimelineEvents(
 function addTimeline(app: Application, radius: number) {
   const timelineContainer = new Container();
   timelineContainer.x = app.screen.width / 2;
-  timelineContainer.y =
-    app.screen.height + radius - byScreenSize({ xs: 110, s: 130, l: 150 });
+  timelineContainer.y = app.screen.height + radius - byScreenSize({ xs: 110, s: 130, l: 150 });
   app.stage.addChild(timelineContainer);
 
   // Low opacity full circle
@@ -336,10 +321,7 @@ function addText(app: Application, name: string) {
 
 function addNotification(app: Application) {
   const textOffset = byScreenSize({ xs: 15, s: 20, m: 50, l: 20, xl: 70 });
-  const width = byScreenSize({
-    xs: app.screen.width * 0.54,
-    s: app.screen.width * 0.33,
-  });
+  const width = byScreenSize({ xs: app.screen.width * 0.54, s: app.screen.width * 0.33 });
   const height = 180;
 
   const notificationContainer = new Container();
@@ -405,22 +387,10 @@ function addGauges(app: Application, stage: 1 | 2) {
 
   // l = horizontal
   // m = vertical
-  const horizontalOffset = byScreenSize({
-    xs: 15,
-    s: 20,
-    m: 50,
-    l: 20,
-    xl: 70,
-  });
+  const horizontalOffset = byScreenSize({ xs: 15, s: 20, m: 50, l: 20, xl: 70 });
   const gaugeRadius = 60;
   const gaugeWidth = gaugeRadius * 2;
-  const secondGaugeOffset = byScreenSize({
-    xs: 10,
-    s: 15,
-    m: 15,
-    l: 20,
-    xl: 20,
-  });
+  const secondGaugeOffset = byScreenSize({ xs: 10, s: 15, m: 15, l: 20, xl: 20 });
   const gaugesWidth = gaugeWidth * 2 + secondGaugeOffset;
 
   const container = new Container();
@@ -439,6 +409,7 @@ function addGauges(app: Application, stage: 1 | 2) {
   gauges.addChild(speedGauge);
 
   const { gauge: altGauge, onUpdate: onUpdateAltGauge } = makeGauge({
+    enterDelayMs: 100,
     radius: gaugeRadius,
     min: 0,
     max: 600,
@@ -473,45 +444,45 @@ function addGauges(app: Application, stage: 1 | 2) {
       } as any,
     },
     durationMs: 200,
-    delayMs: 300,
+    delayMs: 400,
   });
 
   // Shadow
-  const shadow = Sprite.from(
-    `/images/side-shadow-${stage === 1 ? "left" : "right"}.png`
-  );
+  const shadow = Sprite.from(`/images/side-shadow-${stage === 1 ? "left" : "right"}.png`);
   shadow.height = 180;
-  shadow.width = byScreenSize({
-    xs: app.screen.width * 0.54,
-    s: app.screen.width * 0.33,
-  });
+  shadow.width = byScreenSize({ xs: app.screen.width * 0.54, s: app.screen.width * 0.33 });
   shadow.y = 0;
   shadow.anchor.x = 0.5;
   shadow.x = byStage(stage, [0]);
+  shadow.alpha = 0;
   animate({
     startValue: shadow,
-    endValue: { x: byStage(stage, [shadow.width / 2]) },
-    durationMs: 400,
+    endValue: {
+      alpha: 1,
+      transform: {
+        position: {
+          x: byStage(stage, [shadow.width / 2]),
+        },
+      } as any,
+    },
+    durationMs: 250,
     delayMs: 0,
   });
 
-  const xsConfig = () => {
-    shadow.y = -gaugeWidth;
-    altGauge.y = -gaugeWidth;
-    gauges.pivot.x = gaugeWidth / 2;
-    gauges.x = byStage(stage, [horizontalOffset, gaugeWidth / 2]);
-    title.x = byStage(stage, [horizontalOffset, gaugeWidth / 2]);
-    container.y = app.screen.height - 180 - gaugeWidth * 0.75;
-  };
-
-  const lConfig = () => {
-    altGauge.x = gaugeWidth + secondGaugeOffset;
-  };
-
-  byScreenSize({
-    xs: xsConfig,
-    l: lConfig,
-  })();
+  const config = byScreenSize({
+    xs: () => {
+      shadow.y = -gaugeWidth;
+      altGauge.y = -gaugeWidth;
+      gauges.pivot.x = gaugeWidth / 2;
+      gauges.x = byStage(stage, [horizontalOffset, gaugeWidth / 2]);
+      title.x = byStage(stage, [horizontalOffset, gaugeWidth / 2]);
+      container.y = app.screen.height - 180 - gaugeWidth * 0.75;
+    },
+    l: () => {
+      altGauge.x = gaugeWidth + secondGaugeOffset;
+    },
+  });
+  config();
 
   app.stage.addChild(container);
   container.addChild(shadow);
@@ -547,9 +518,7 @@ function setPointsVisibility(
       timelineEvent.cpContainer.alpha = alpha;
       if (angle <= 0) {
         if (!timelineEvent.passed) {
-          const circle = timelineEvent.cpContainer.getChildByName(
-            "circle"
-          ) as Graphics;
+          const circle = timelineEvent.cpContainer.getChildByName("circle") as Graphics;
           circle.beginFill(0xffffff);
           circle.drawCircle(0, 0, 8 / 3);
           circle.endFill();
@@ -559,6 +528,88 @@ function setPointsVisibility(
     }
   });
 }
+
+// function setPointsVisibilityV2(
+//   date: Date,
+//   timelineEvents: TimelineEvent[],
+//   radius: number,
+//   timeline: Container
+// ) {
+//   const liftoffTime = timelineEvents[0].time;
+//   const indexOfSeco1 = timelineEvents.findIndex((te) => te.title === "SECO-1");
+//   const indexOfSeco2 = timelineEvents.findIndex((te) => te.title === "SECO-2");
+//   const seco1 = timelineEvents.find((te) => te.title === "SECO-1")!.time;
+//   const seco2 = timelineEvents.find((te) => te.title === "SECO-2")!.time;
+//   const endTime = timelineEvents[timelineEvents.length - 1].time;
+
+//   let diff = 0;
+//   let totalMs = 0;
+//   let startTime = liftoffTime;
+//   let visibleEvents: TimelineEvent[] = [];
+
+//   // Liftoff -> Seco1
+//   // * 1
+//   if (date < seco1) {
+//     console.log("before seco1");
+//     startTime = liftoffTime;
+//     totalMs = differenceInMilliseconds(endTime, startTime);
+//     visibleEvents = timelineEvents.slice(0, indexOfSeco1 + 1);
+//   } else if (date < seco2) {
+//     console.log("before seco2");
+//     // Seco1 -> Seco2
+//     // * 8
+//     startTime = seco1;
+//     diff = differenceInMilliseconds(startTime, liftoffTime) * 7;
+//     totalMs = differenceInMilliseconds(endTime, startTime) * 8;
+//     visibleEvents = [...timelineEvents.slice(indexOfSeco1, indexOfSeco2 + 1)];
+//   } else {
+//     console.log("after seco2");
+//     // Seco2 -> End
+//     // % 4
+//     startTime = seco2;
+//     totalMs = differenceInMilliseconds(endTime, startTime) / 4;
+//     visibleEvents = timelineEvents.slice(indexOfSeco2);
+//   }
+
+//   timelineEvents.forEach((timelineEvent) => {
+//     if (visibleEvents.includes(timelineEvent)) {
+//       const { angle: angleForCalc } = getPositionOnTimeline(
+//         radius,
+//         totalMs,
+//         differenceInMilliseconds(timelineEvent.time, date) + diff
+//       );
+
+//       const { x, y, angle } = getPositionOnTimeline(
+//         radius,
+//         totalMs,
+//         differenceInMilliseconds(timelineEvent.time, startTime) + diff
+//       );
+
+//       const alpha = getTimelineAlpha(angleForCalc);
+//       timelineEvent.cpContainer.alpha = 1; //alpha;
+//       timelineEvent.cpContainer.visible = true;
+
+//       timelineEvent.cpContainer.x = x;
+//       timelineEvent.cpContainer.y = y;
+//       timelineEvent.cpContainer.angle = angle;
+
+//       // // Position
+
+//       // Fill it
+//       if (angleForCalc <= 0) {
+//         if (!timelineEvent.passed) {
+//           const circle = timelineEvent.cpContainer.getChildByName("circle") as Graphics;
+//           circle.beginFill(0xffffff);
+//           circle.drawCircle(0, 0, 8 / 3);
+//           circle.endFill();
+//           timelineEvent.passed = true;
+//         }
+//       }
+//     } else {
+//       timelineEvent.cpContainer.visible = false;
+//     }
+//   });
+// }
 
 export class UI {
   radius: number;
@@ -576,14 +627,10 @@ export class UI {
 
   totalMs = 0;
   totalSeconds = 0;
-  updateUIParameters: StageEntity<Parameters<UpdateUI>> = {};
+  updateUIParameters: ByStage<Parameters<UpdateUI>> = {};
   updateNotificationParameters: Parameters<UpdateNotification> = [null];
 
-  constructor(
-    canvas: HTMLCanvasElement,
-    radius: number,
-    launch: LaunchWithData<Date>
-  ) {
+  constructor(canvas: HTMLCanvasElement, radius: number, launch: LaunchWithData<Date>) {
     this.radius = radius;
     this.launch = launch;
     this.app = createPIXI(canvas);
@@ -615,12 +662,13 @@ export class UI {
     this.app.ticker.add(resize);
   }
 
-  public static async ofElement(
-    canvas: HTMLCanvasElement,
-    launch: LaunchWithData<Date>
-  ) {
+  public static async ofElement(canvas: HTMLCanvasElement, launch: LaunchWithData<Date>) {
     await resourcesPromise;
-    return new UI(canvas, window.innerWidth * 0.5, launch).initialize();
+    return new UI(
+      canvas,
+      Math.max(window.innerWidth, window.innerHeight) * 0.5,
+      launch
+    ).initialize();
   }
 
   private initialize() {
@@ -634,12 +682,7 @@ export class UI {
     } = this;
 
     this.timeline = addTimeline(app, radius).timeline;
-
-    this.totalMs = differenceInMilliseconds(
-      events[events.length - 1].time,
-      liftoffTime
-    );
-
+    this.totalMs = differenceInMilliseconds(events[events.length - 1].time, liftoffTime);
     this.timelineEvents = addTimelineEvents(
       events,
       this.totalMs,
@@ -647,16 +690,9 @@ export class UI {
       liftoffTime,
       this.timeline
     );
+    setPointsVisibility(events[0].time, this.timelineEvents, radius, this.totalMs);
 
     this.countdownText = addText(app, name).countdownText;
-
-    setPointsVisibility(
-      events[0].time,
-      this.timelineEvents,
-      radius,
-      this.totalMs
-    );
-
     this.notification = addNotification(app);
 
     return this;
@@ -668,8 +704,8 @@ export class UI {
     const [launchNotification] = parameters;
     const { app, notification } = this;
 
-    // Title
     if (launchNotification) {
+      // Title
       (notification.getChildByName("title") as Text).text =
         launchNotification.title.toUpperCase() || "";
 
@@ -684,9 +720,7 @@ export class UI {
         alpha: !launchNotification ? 0.3 : 1,
         transform: {
           position: {
-            x: !launchNotification
-              ? app.screen.width
-              : app.screen.width - notification.width,
+            x: !launchNotification ? app.screen.width : app.screen.width - notification.width,
           } as any,
         } as any,
       },

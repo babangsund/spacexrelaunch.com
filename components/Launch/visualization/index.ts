@@ -34,11 +34,7 @@ import { Position, LaunchData, LaunchTelemetry } from "../../../data/launch";
 
 type DeferredLoader = () => void;
 
-export type UpdateVisual = (data: {
-  stage: 1 | 2;
-  altitude: number;
-  position: Position;
-}) => void;
+export type UpdateVisual = (data: { stage: 1 | 2; altitude: number; position: Position }) => void;
 
 const atmosphereVertexShader = `
 varying vec3 vertexNormal;
@@ -62,11 +58,7 @@ void main() {
 
 const radius = 100;
 
-function createRenderer(
-  width: number,
-  height: number,
-  canvas: HTMLCanvasElement
-) {
+function createRenderer(width: number, height: number, canvas: HTMLCanvasElement) {
   // Retina displays have such a high pixel density there is very little visual difference between having AA on/off.
   const antialias = window.devicePixelRatio > 1 ? false : true;
 
@@ -88,7 +80,6 @@ function createCamera() {
   const far = 1500;
   const camera = new PerspectiveCamera(fov, aspect, near, far);
   camera.position.set(0, 0, 0);
-  // camera.position.z = 0
   return camera;
 }
 
@@ -96,8 +87,7 @@ function doesNeedResize(renderer: Renderer) {
   const canvas = renderer.domElement;
   const width = window.innerWidth;
   const height = window.innerHeight;
-  const needResize =
-    canvas.clientWidth !== width || canvas.clientHeight !== height;
+  const needResize = canvas.clientWidth !== width || canvas.clientHeight !== height;
 
   return needResize;
 }
@@ -113,11 +103,7 @@ function getPosition(lat: number, lon: number, radius: number) {
   return new Vector3(x, y, z);
 }
 
-async function addSkybox(
-  scene: Scene,
-  loader: TextureLoader,
-  deferredLoaders: DeferredLoader[]
-) {
+async function addSkybox(scene: Scene, loader: TextureLoader, deferredLoaders: DeferredLoader[]) {
   const sides = ["nz.png", "pz.png", "py.png", "ny.png", "px.png", "nx.png"];
 
   const materials: MeshBasicMaterial[] = [];
@@ -193,11 +179,7 @@ function addAtmosphere(
   return atmosphere;
 }
 
-async function addRocketStage(
-  scene: Scene,
-  loader: TextureLoader,
-  stage: 1 | 2
-) {
+async function addRocketStage(scene: Scene, loader: TextureLoader, stage: 1 | 2) {
   const rocketStage = new Sprite(
     new SpriteMaterial({
       map: await loader.loadAsync(`/images/stage-${stage}.png`),
@@ -234,8 +216,11 @@ function addDolly(scene: Scene, camera: PerspectiveCamera) {
   dolly.lookAt(new Vector3(0, 0, 0));
 
   // Position camera inside dolly
-  camera.lookAt(new Vector3(0, 200, 0));
-  camera.position.y = -120;
+  // camera.lookAt(new Vector3(0, 200, 0));
+  // camera.position.y = -120;
+  const distance = 200;
+  camera.lookAt(new Vector3(0, distance, 0));
+  camera.position.y = -(distance * 0.6);
 
   scene.add(dolly);
   return dolly;
@@ -255,10 +240,8 @@ function getPositionAroundCircle(radius = 220, date = new Date()) {
   const minutesPassedToday =
     (date.getHours() - directionalOffset) * minutesInAnHour + date.getMinutes();
 
-  const x =
-    radius * Math.cos((2 * Math.PI * minutesPassedToday) / minutesInADay);
-  const z =
-    radius * Math.sin((2 * Math.PI * minutesPassedToday) / minutesInADay);
+  const x = radius * Math.cos((2 * Math.PI * minutesPassedToday) / minutesInADay);
+  const z = radius * Math.sin((2 * Math.PI * minutesPassedToday) / minutesInADay);
 
   return { x, z };
 }
@@ -276,7 +259,7 @@ function createTextureLoader() {
   return new TextureLoader(manager);
 }
 
-function createLinearInterpolationPath(
+function createLinearInterpolationCurve(
   telemetry: LaunchTelemetry<Date>[],
   altitudeScale: ScaleLinear<number, number>
 ) {
@@ -305,7 +288,7 @@ function createLinearInterpolationPath(
     }
   });
 
-  return new CatmullRomCurve3(points);
+  return { numberOfPoints: points.length, curve: new CatmullRomCurve3(points) };
 }
 
 function addLights(scene: Scene, liftoffTime: Date) {
@@ -323,14 +306,9 @@ function addPath(
   telemetry: LaunchTelemetry<Date>[],
   altitudeScale: ScaleLinear<number, number>
 ) {
+  const { curve, numberOfPoints } = createLinearInterpolationCurve(telemetry, altitudeScale);
   const path = new Line(
-    new TubeGeometry(
-      createLinearInterpolationPath(telemetry, altitudeScale),
-      6000,
-      0.12,
-      8,
-      false
-    ),
+    new TubeGeometry(curve, numberOfPoints, 0.12, 8, false),
     new MeshBasicMaterial({
       color: 0x9b9ea2,
       depthWrite: false,
@@ -346,11 +324,7 @@ export async function makeVisual(
   launch: LaunchData<Date>,
   altitudeScale: ScaleLinear<number, number>
 ) {
-  const renderer = createRenderer(
-    window.innerWidth,
-    window.innerHeight,
-    canvas
-  );
+  const renderer = createRenderer(window.innerWidth, window.innerHeight, canvas);
 
   const camera = createCamera();
   const loader = createTextureLoader();
@@ -373,21 +347,13 @@ export async function makeVisual(
   // Sphere Geometry
   const widthSegments = 100;
   const heightSegments = 100;
-  const sphereGeometry = new SphereBufferGeometry(
-    radius,
-    widthSegments,
-    heightSegments
-  );
+  const sphereGeometry = new SphereBufferGeometry(radius, widthSegments, heightSegments);
 
   // Earth
   await addEarth(scene, loader, sphereGeometry, deferredLoaders);
 
   // Atmosphere
-  addAtmosphere(
-    scene,
-    sphereGeometry,
-    getPositionAroundCircle(3, launch.liftoffTime)
-  );
+  addAtmosphere(scene, sphereGeometry, getPositionAroundCircle(3, launch.liftoffTime));
 
   // Light
   const light = addLights(scene, launch.liftoffTime);
@@ -410,10 +376,7 @@ export async function makeVisual(
 
   // Move the sun every minute.
   setInterval(() => {
-    const { x: lightX, z: lightZ } = getPositionAroundCircle(
-      220,
-      launch.liftoffTime
-    );
+    const { x: lightX, z: lightZ } = getPositionAroundCircle(220, launch.liftoffTime);
     light.position.set(lightX, 0, lightZ);
   }, 1000 * 60); // Every minute
 
