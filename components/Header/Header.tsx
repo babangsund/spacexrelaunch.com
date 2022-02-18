@@ -9,9 +9,9 @@ export default function Header() {
   return (
     <header className={styles.header}>
       <img
-        className={styles.logo}
         alt="SpaceX"
         src="/images/x.svg"
+        className={styles.logo}
         onClick={async () => {
           if (!isHome) {
             await startPageTransition();
@@ -19,6 +19,9 @@ export default function Header() {
           }
         }}
       />
+      <p className={styles.affiliation}>
+        This site is <strong>not</strong> affiliated with SpaceX
+      </p>
     </header>
   );
 }

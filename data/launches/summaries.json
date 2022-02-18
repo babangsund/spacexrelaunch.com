@@ -58,8 +58,8 @@
     "name": "Starlink 4-5",
     "img": "/images/launches/Starlink_4-5.png",
     "stats": {
-      "speed": 19900,
-      "altitude": 400,
+      "speed": 27147,
+      "altitude": 210,
       "site": "LC-39A",
       "timeZone": "America/New_York",
       "liftoff": "2022-01-06T09:49:00.000Z"

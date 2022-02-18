@@ -1,9 +1,22 @@
 .header {
   z-index: 3;
+  width: 100%;
   padding: 20px;
   position: absolute;
 }
 
+.affiliation {
+  margin: 0;
+  float: right;
+  background-color: #000;
+}
+
 .logo {
   cursor: pointer;
+}
+
+@media (max-width: 767.98px) {
+  .affiliation {
+    font-size: 12px;
+  }
 }
