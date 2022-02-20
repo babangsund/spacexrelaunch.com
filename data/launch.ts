@@ -14,6 +14,7 @@ export interface LaunchSummary {
   img: string;
   name: string;
   stats: LaunchStats;
+  available: boolean;
 }
 
 export interface LaunchTelemetry<TDate extends Timestamp> {
@@ -54,9 +55,7 @@ export function getLaunch(launchName: string): LaunchWithData<string> {
   const launch = getLaunches().find((l) => l.name === launchName)!;
   return {
     ...launch,
-    data: require(`./launches/telemetry/${launchName
-      .toLowerCase()
-      .replace(" ", "_")}.json`),
+    data: require(`./launches/telemetry/${launchName.toLowerCase().replace(" ", "_")}.json`),
   };
 }
 

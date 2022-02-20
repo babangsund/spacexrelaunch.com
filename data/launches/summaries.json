@@ -1,5 +1,6 @@
 [
   {
+    "available": false,
     "name": "Starlink 4-7",
     "img": "/images/launches/Starlink_4-7.png",
     "stats": {
@@ -11,6 +12,7 @@
     }
   },
   {
+    "available": false,
     "name": "NROL-87",
     "img": "/images/launches/NROL-87.png",
     "stats": {
@@ -22,6 +24,7 @@
     }
   },
   {
+    "available": false,
     "name": "CSG-2",
     "img": "/images/launches/CSG-2.png",
     "stats": {
@@ -33,6 +36,7 @@
     }
   },
   {
+    "available": false,
     "name": "Starlink 4-6",
     "img": "/images/launches/Starlink_4-6.png",
     "stats": {
@@ -44,6 +48,7 @@
     }
   },
   {
+    "available": true,
     "name": "Transporter-3",
     "img": "/images/launches/Transporter-3.png",
     "stats": {
@@ -55,6 +60,7 @@
     }
   },
   {
+    "available": false,
     "name": "Starlink 4-5",
     "img": "/images/launches/Starlink_4-5.png",
     "stats": {

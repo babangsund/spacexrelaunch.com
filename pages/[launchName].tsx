@@ -4,12 +4,7 @@ import dynamic from "next/dynamic";
 import type { NextPage } from "next";
 import parseISO from "date-fns/parseISO";
 
-import {
-  getLaunch,
-  getLaunches,
-  LaunchData,
-  LaunchWithData,
-} from "../data/launch";
+import { getLaunch, getLaunches, LaunchData, LaunchWithData } from "../data/launch";
 import Header from "../components/Header/Header";
 import SoundBars from "../components/SoundBars/SoundBars";
 
@@ -17,9 +12,7 @@ import Play from "../components/Play/PlayPause";
 import Social from "../components/Social/Social";
 import { useMusic } from "../components/useMusic";
 import styles from "../styles/LaunchPage.module.css";
-import PlaybackRate, {
-  usePlaybackRate,
-} from "../components/PlaybackRate/PlaybackRate";
+import PlaybackRate, { usePlaybackRate } from "../components/PlaybackRate/PlaybackRate";
 import Meta from "../components/Meta/Meta";
 import Replay from "../components/Replay/Replay";
 import { startPageTransition } from "../components/transitionPage";
@@ -112,83 +105,25 @@ export const PreloadLinks = (
       as="image"
       type="image/svg+xml"
     />
+    <link crossOrigin="anonymous" rel="preload" as="image" href="/images/earth-low-res.jpg" />
+    <link crossOrigin="anonymous" rel="preload" as="image" href="/images/stage-1.png" />
+    <link crossOrigin="anonymous" rel="preload" as="image" href="/images/stage-2.png" />
+    <link crossOrigin="anonymous" rel="preload" as="image" href="/images/outer-shadow.png" />
+    <link crossOrigin="anonymous" rel="preload" as="image" href="/images/side-shadow-left.png" />
+    <link crossOrigin="anonymous" rel="preload" as="image" href="/images/side-shadow-right.png" />
+    <link crossOrigin="anonymous" rel="preload" as="image" href="/images/gauge-shadow.png" />
+    <link crossOrigin="anonymous" rel="preload" as="image" href="/images/stars-low-res/nx.png" />
+    <link crossOrigin="anonymous" rel="preload" as="image" href="/images/stars-low-res/ny.png" />
+    <link crossOrigin="anonymous" rel="preload" as="image" href="/images/stars-low-res/nz.png" />
+    <link crossOrigin="anonymous" rel="preload" as="image" href="/images/stars-low-res/px.png" />
+    <link crossOrigin="anonymous" rel="preload" as="image" href="/images/stars-low-res/py.png" />
+    <link crossOrigin="anonymous" rel="preload" as="image" href="/images/stars-low-res/pz.png" />
     <link
       crossOrigin="anonymous"
       rel="preload"
+      href="/images/pause.svg"
       as="image"
-      href="/images/earth-low-res.jpg"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/stage-1.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/stage-2.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/outer-shadow.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/side-shadow-left.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/side-shadow-right.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/gauge-shadow.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/stars-low-res/nx.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/stars-low-res/ny.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/stars-low-res/nz.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/stars-low-res/px.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/stars-low-res/py.png"
-    />
-    <link
-      crossOrigin="anonymous"
-      rel="preload"
-      as="image"
-      href="/images/stars-low-res/pz.png"
+      type="image/svg+xml"
     />
     <LaunchNoSSRNoop />
   </>
@@ -232,10 +167,7 @@ const LaunchPage: NextPage<LaunchPageProps> = ({ launch }) => {
       <Head>
         <Meta />
         <title>{launch.name} Relaunch</title>
-        <meta
-          name="description"
-          content={`Launched SpaceX Mission ${launch.name}`}
-        />
+        <meta name="description" content={`Launched SpaceX Mission ${launch.name}`} />
         <link rel="icon" href="/favicon.ico" />
 
         <style global jsx>{`
@@ -247,14 +179,9 @@ const LaunchPage: NextPage<LaunchPageProps> = ({ launch }) => {
 
       <Header />
 
-      <aside
-        className={`${styles.controls} ${!isLaunching ? styles.hidden : ""}`}
-      >
+      <aside className={`${styles.controls} ${!isLaunching ? styles.hidden : ""}`}>
         <SoundBars isPlaying={isMusicPlaying} onToggle={toggleIsMusicPlaying} />
-        <Play
-          isPlaying={isLaunchPlaying}
-          onChange={() => setIsLaunchPlaying((p) => !p)}
-        />
+        <Play isPlaying={isLaunchPlaying} onChange={() => setIsLaunchPlaying((p) => !p)} />
         <PlaybackRate rate={playbackRate} onChange={togglePlaybackRate} />
         <Replay
           onClick={async () => {
@@ -271,11 +198,7 @@ const LaunchPage: NextPage<LaunchPageProps> = ({ launch }) => {
           onClick={() => toggleLaunch()}
           className={`${styles.enter} ${isLaunching ? styles.hidden : ""}`}
         >
-          <Play
-            onChange={() => {}}
-            className={styles.start}
-            isPlaying={isLaunchPlaying}
-          />
+          <Play onChange={() => {}} className={styles.start} isPlaying={isLaunchPlaying} />
         </div>
       )}
 

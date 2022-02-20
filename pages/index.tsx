@@ -11,10 +11,7 @@ import Header from "../components/Header/Header";
 import { useMounted } from "../components/utils";
 import styles from "../styles/IndexPage.module.css";
 import { TransitionValue } from "../components/TransitionValue";
-import {
-  endPageTransition,
-  startPageTransition,
-} from "../components/transitionPage";
+import { endPageTransition, startPageTransition } from "../components/transitionPage";
 import Meta from "../components/Meta/Meta";
 import {
   byScreenSize,
@@ -24,7 +21,7 @@ import {
 } from "../components/screenSize";
 
 export async function getStaticProps() {
-  const launches = getLaunches();
+  const launches = getLaunches().slice().reverse();
   return {
     props: {
       launches,
@@ -43,29 +40,23 @@ interface DateTimeProps {
 
 function DisplayTime({ dateTime, timeZone }: DateTimeProps) {
   const resolvedOptions = Intl.DateTimeFormat().resolvedOptions();
-  const timeString = new Date(dateTime).toLocaleTimeString(
-    resolvedOptions.locale,
-    {
-      timeZone,
-      hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZoneName: "short",
-    }
-  );
+  const timeString = new Date(dateTime).toLocaleTimeString(resolvedOptions.locale, {
+    timeZone,
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+  });
 
   return <TransitionValue padNumber={2} value={timeString} />;
 }
 
 function DisplayDate({ dateTime, timeZone }: DateTimeProps) {
   const resolvedOptions = Intl.DateTimeFormat().resolvedOptions();
-  const dateString = new Date(dateTime).toLocaleDateString(
-    resolvedOptions.locale,
-    {
-      timeZone,
-      dateStyle: "short",
-    }
-  );
+  const dateString = new Date(dateTime).toLocaleDateString(resolvedOptions.locale, {
+    timeZone,
+    dateStyle: "short",
+  });
 
   return <TransitionValue value={dateString} />;
 }
@@ -139,24 +130,9 @@ function RenderHead({ launch }: RenderHeadProps) {
         crossOrigin="anonymous"
         href="/fonts/D-DIN/D-DIN-Bold.woff2"
       />
-      <link
-        as="image"
-        rel="preload"
-        href="/images/x.svg"
-        type="image/svg+xml"
-      />
-      <link
-        as="image"
-        rel="preload"
-        type="image/svg+xml"
-        href="/images/outline.svg"
-      />
-      <link
-        as="image"
-        rel="preload"
-        type="image/svg+xml"
-        href="/images/outline-outer.svg"
-      />
+      <link as="image" rel="preload" href="/images/x.svg" type="image/svg+xml" />
+      <link as="image" rel="preload" type="image/svg+xml" href="/images/outline.svg" />
+      <link as="image" rel="preload" type="image/svg+xml" href="/images/outline-outer.svg" />
     </Head>
   );
 }
@@ -223,9 +199,7 @@ function Stats({ screenSize, launchSummary }: StatsProps) {
         unit="KM"
         name="Altitude"
         angle={(95 / 4) * 3}
-        value={
-          <TransitionValue value={launchSummary.stats.altitude.toString()} />
-        }
+        value={<TransitionValue value={launchSummary.stats.altitude.toString()} />}
       />
     </ul>
   );
@@ -233,8 +207,8 @@ function Stats({ screenSize, launchSummary }: StatsProps) {
 
 const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
   const [{ selectedIndex, selectedLaunch }, setLaunch] = React.useState({
-    selectedIndex: 0,
-    selectedLaunch: launches[0],
+    selectedIndex: 1,
+    selectedLaunch: launches[1],
   });
 
   const router = useRouter();
@@ -282,10 +256,7 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
           <div className={styles.dotContainer} aria-hidden="true">
             <div
               className={styles.dot}
-              style={rotateDot(
-                180 + (75 / launches.length) * selectedIndex + 1.5,
-                screenSize
-              )}
+              style={rotateDot(180 + (75 / launches.length) * selectedIndex + 1.5, screenSize)}
             />
           </div>
 
@@ -306,10 +277,7 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
                       selectedLaunch: launch,
                     });
                   }}
-                  style={rotateLaunch(
-                    180 + (75 / launches.length) * i,
-                    screenSize
-                  )}
+                  style={rotateLaunch(180 + (75 / launches.length) * i, screenSize)}
                 >
                   {launch.name}
                 </li>
@@ -317,19 +285,27 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
             })}
           </ul>
 
-          <button
-            type="button"
-            className={styles.button}
-            aria-label={`Launch ${selectedLaunch.name}`}
-            onClick={async () => {
-              await startPageTransition();
-              setTimeout(() => {
-                router.push("/" + selectedLaunch.name);
-              }, 150);
-            }}
-          >
-            LAUNCH
-          </button>
+          <div className={styles.action}>
+            <button
+              type="button"
+              className={`${styles.button} ${selectedLaunch.available ? "" : styles.disabled}`}
+              aria-label={`Launch ${selectedLaunch.name}`}
+              onClick={async () => {
+                await startPageTransition();
+                setTimeout(() => {
+                  router.push("/" + selectedLaunch.name);
+                }, 150);
+              }}
+            >
+              LAUNCH
+            </button>
+
+            <small
+              className={`${styles.unavailable} ${selectedLaunch.available ? styles.hidden : ""}`}
+            >
+              Only the Transporter-3 mission is available in this preview.
+            </small>
+          </div>
 
           {/* Preload assets */}
           {mounted && PreloadLinks}
