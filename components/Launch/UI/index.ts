@@ -681,7 +681,8 @@ export class UI {
       },
     } = this;
 
-    this.timeline = addTimeline(app, radius).timeline;
+    const { timeline } = addTimeline(app, radius);
+    this.timeline = timeline;
     this.totalMs = differenceInMilliseconds(events[events.length - 1].time, liftoffTime);
     this.timelineEvents = addTimelineEvents(
       events,

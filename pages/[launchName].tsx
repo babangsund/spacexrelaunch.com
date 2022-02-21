@@ -166,8 +166,8 @@ const LaunchPage: NextPage<LaunchPageProps> = ({ launch }) => {
     <>
       <Head>
         <Meta />
-        <title>{launch.name} Relaunch</title>
-        <meta name="description" content={`Launched SpaceX Mission ${launch.name}`} />
+        <title>{launch.name} Mission</title>
+        <meta name="description" content={`The ${launch.name} mission.`} />
         <link rel="icon" href="/favicon.ico" />
 
         <style global jsx>{`

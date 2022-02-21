@@ -112,8 +112,8 @@ function RenderHead({ launch }: RenderHeadProps) {
   return (
     <Head>
       <Meta />
-      <title>Relaunch {launch.name}</title>
-      <meta name="description" content="Relaunch SpaceX missions on-demand" />
+      <title>Launch {launch.name}</title>
+      <meta name="description" content={`Launch the ${launch.name} SpaceX mission.`} />
       <link rel="icon" href="/favicon.ico" />
       <link rel="preload" as="image" href="/images/stars.png" />
       <link
