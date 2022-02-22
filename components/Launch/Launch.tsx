@@ -8,7 +8,7 @@ import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 
 import styles from "./Launch.module.css";
 import { endPageTransition } from "../transitionPage";
-import { UI, UpdateUI, UpdateNotification } from "./UI";
+import { UI } from "./UI";
 import { makeVisual, UpdateVisual } from "./visualization";
 import { LaunchWithData, Position } from "../../data/launch";
 
@@ -34,11 +34,7 @@ interface StageSimulator {
 
 type StageSimulators = Record<Stage, StageSimulator>;
 
-const Launch = React.memo(function Launch({
-  launch,
-  isPlaying,
-  playbackRate,
-}: LaunchProps) {
+const Launch = React.memo(function Launch({ launch, isPlaying, playbackRate }: LaunchProps) {
   const { data } = launch;
 
   const pixiCanvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -62,17 +58,10 @@ const Launch = React.memo(function Launch({
         ),
         waypointInterpolators: {
           speed: interpolateNumber(0, data.telemetry.stage[stage][1].speed),
-          altitude: interpolateNumber(
-            0,
-            data.telemetry.stage[stage][1].altitude
-          ),
+          altitude: interpolateNumber(0, data.telemetry.stage[stage][1].altitude),
           position: geoInterpolate(
-            data.telemetry.stage[stage][0].position
-              .slice()
-              .reverse() as Position,
-            data.telemetry.stage[stage][1].position
-              .slice()
-              .reverse() as Position
+            data.telemetry.stage[stage][0].position.slice().reverse() as Position,
+            data.telemetry.stage[stage][1].position.slice().reverse() as Position
           ),
         },
       };
@@ -132,21 +121,16 @@ const Launch = React.memo(function Launch({
         }
 
         // Stage hasn't started yet
-        if (
-          date.current <
-          data.telemetry.stage[stage][stageData.waypointIndex].time
-        ) {
+        if (date.current < data.telemetry.stage[stage][stageData.waypointIndex].time) {
           // Break
           continue;
         }
 
         if (date.current >= stageData.waypointEndTime) {
           stageData.waypointIndex = stageData.waypointIndex + 1;
-          const checkpoint =
-            data.telemetry.stage[stage][stageData.waypointIndex];
+          const checkpoint = data.telemetry.stage[stage][stageData.waypointIndex];
 
-          const nextCheckpoint =
-            data.telemetry.stage[stage][stageData.waypointIndex + 1];
+          const nextCheckpoint = data.telemetry.stage[stage][stageData.waypointIndex + 1];
 
           if (!nextCheckpoint) {
             stageData.isDone = true;
@@ -176,10 +160,7 @@ const Launch = React.memo(function Launch({
           stageData.waypointEndTime = nextCheckpoint.time;
           stageData.waypointInterpolators = {
             speed: interpolateNumber(checkpoint.speed, nextCheckpoint.speed),
-            altitude: interpolateNumber(
-              checkpoint.altitude,
-              nextCheckpoint.altitude
-            ),
+            altitude: interpolateNumber(checkpoint.altitude, nextCheckpoint.altitude),
             position: geoInterpolate(
               checkpoint.position.slice().reverse() as Position,
               nextCheckpoint.position.slice().reverse() as Position
@@ -234,10 +215,10 @@ const Launch = React.memo(function Launch({
     async function initialize() {
       const altitudeScale = scaleLinear()
         .domain(
-          extent(
-            data.telemetry.stage[1].concat(data.telemetry.stage[2]),
-            (t) => t.altitude
-          ) as [number, number]
+          extent(data.telemetry.stage[1].concat(data.telemetry.stage[2]), (t) => t.altitude) as [
+            number,
+            number
+          ]
         )
         .range([0, 5]);
 
@@ -247,10 +228,7 @@ const Launch = React.memo(function Launch({
         altitudeScale
       );
 
-      ui.current = await UI.ofElement(
-        pixiCanvasRef.current as HTMLCanvasElement,
-        launch
-      );
+      ui.current = await UI.ofElement(pixiCanvasRef.current as HTMLCanvasElement, launch);
 
       setTimeout(() => {
         requestAnimationFrame(() => {

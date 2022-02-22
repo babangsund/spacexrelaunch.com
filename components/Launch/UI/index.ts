@@ -13,15 +13,14 @@ import {
   BitmapFont,
   Application,
   AbstractRenderer,
+  InteractionManager,
 } from "pixi.js";
 
 import { animate } from "./animate";
 import { makeGauge } from "./gauge";
-import { toRadians } from "../../utils";
+import { convertRelativeScale, toRadians } from "../../utils";
 import { byScreenSize } from "../../screenSize";
 import { LaunchEvent, LaunchNotification, LaunchWithData } from "../../../data/launch";
-import sub from "date-fns/sub";
-import add from "date-fns/add";
 
 interface Updaters {
   updateSpeed: Function;
@@ -681,7 +680,7 @@ export class UI {
       },
     } = this;
 
-    const { timeline } = addTimeline(app, radius);
+    const { timeline, timelineContainer } = addTimeline(app, radius);
     this.timeline = timeline;
     this.totalMs = differenceInMilliseconds(events[events.length - 1].time, liftoffTime);
     this.timelineEvents = addTimelineEvents(
