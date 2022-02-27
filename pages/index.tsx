@@ -260,7 +260,7 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
             />
           </div>
 
-          <ul className={styles.launches} role="listbox">
+          <ul className={styles.launches} role="listbox" aria-label="Launches">
             {launches.map((launch, i) => {
               const isSelected = launch === selectedLaunch;
               return (
