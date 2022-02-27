@@ -308,10 +308,14 @@ const IndexPage: NextPage<IndexPageProps> = ({ launches }) => {
           </div>
 
           {/* Preload assets */}
-          {mounted && PreloadLinks}
-          <Link href={"/" + selectedLaunch.name} aria-hidden="true">
-            {" "}
-          </Link>
+          {mounted && (
+            <>
+              {PreloadLinks}
+              <Link href={"/" + selectedLaunch.name} aria-hidden="true">
+                {" "}
+              </Link>
+            </>
+          )}
         </section>
       </main>
 
