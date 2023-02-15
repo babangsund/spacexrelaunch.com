@@ -16,7 +16,7 @@ function ExternalLink({ children, href }: ExternalLinkProps) {
 export default function Aside() {
   return (
     <aside className={styles.social}>
-      <ExternalLink href="https://github.com/babangsund">
+      <ExternalLink href="https://github.com/babangsund/spacexrelaunch.com">
         <img src="/images/github.svg" alt="Github" />
       </ExternalLink>
       <ExternalLink href="https://twitter.com/babangsund">
