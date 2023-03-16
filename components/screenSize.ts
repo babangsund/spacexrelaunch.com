@@ -32,7 +32,8 @@ interface ByScreenSize<T> {
 }
 
 export function byScreenSize<T>({
-  screenSize = getScreenSize(window.innerWidth),
+  //screenSize = getScreenSize(window.innerWidth),
+  screenSize = getScreenSize(1200),
   xs,
   s = xs,
   m = s || xs,
@@ -65,9 +66,7 @@ export function useResizeObserver<TElement extends HTMLElement>(): [
       for (let entry of entries) {
         if (entry.contentBoxSize) {
           // Firefox implements `contentBoxSize` as a single content rect, rather than an array
-          const contentBoxSize: ResizeObserverSize = Array.isArray(
-            entry.contentBoxSize
-          )
+          const contentBoxSize: ResizeObserverSize = Array.isArray(entry.contentBoxSize)
             ? entry.contentBoxSize[0]
             : entry.contentBoxSize;
 

@@ -3,18 +3,15 @@ import differenceInSeconds from "date-fns/differenceInSeconds";
 import differenceInMinutes from "date-fns/differenceInMinutes";
 import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 import {
+  Assets,
   Text,
-  Loader,
   Sprite,
   Graphics,
-  Renderer,
   Container,
   BitmapText,
   BitmapFont,
   Application,
-  AbstractRenderer,
-  InteractionManager,
-} from "pixi.js";
+} from "@pixi/webworker";
 
 import { animate } from "./animate";
 import { makeGauge } from "./gauge";
@@ -33,6 +30,8 @@ interface ByStage<T> {
 }
 
 type StageUpdaters = ByStage<Updaters>;
+
+type WindowProperties = Pick<Window, "innerWidth" | "innerHeight" | "devicePixelRatio">;
 
 export type UpdateNotification = (launchNotification: null | LaunchNotification<Date>) => void;
 
@@ -70,22 +69,21 @@ function loadBitmapFonts() {
   );
 }
 
-const fontsPromise = Promise.all([
-  new FontFaceObserver("Blender Pro", {
-    weight: 500,
-  }).load(undefined, 30000),
-  new FontFaceObserver("Blender Pro", {
-    weight: 700,
-  }).load(undefined, 30000),
-]).then(loadBitmapFonts);
+Assets.add("BlenderPro500", "/fonts/BlenderPro500.fnt");
+Assets.add("BlenderPro700", "/fonts/BlenderPro700.fnt");
 
-Loader.shared.add("/images/gauge-shadow.png");
-Loader.shared.add("/images/outer-shadow.png");
-Loader.shared.add("/images/side-shadow-left.png");
-Loader.shared.add("/images/side-shadow-right.png");
-const texturesPromise = new Promise((resolve) => {
-  Loader.shared.load(resolve);
-});
+const fontsPromise = Promise.all([Assets.load(["BlenderPro500", "BlenderPro700"])]).then(
+  loadBitmapFonts
+);
+
+Assets.add("gauge-shadow", "/images/gauge-shadow.png");
+Assets.add("outer-shadow", "/images/outer-shadow.png");
+Assets.add("side-shadow-left", "/images/side-shadow-left.png");
+Assets.add("side-shadow-right", "/images/side-shadow-right.png");
+
+const texturesPromise = [
+  Assets.load(["gauge-shadow", "outer-shadow", "side-shadow-left", "side-shadow-right"]),
+];
 
 const resourcesPromise = Promise.all([fontsPromise, texturesPromise]);
 
@@ -96,10 +94,10 @@ function getTimelineAlpha(angle: number) {
   return 1 - Math.abs((angle / 90) * 90) / 25 + 0.25; // 25 and 0.25 are arbitrary values
 }
 
-function doesNeedResize(renderer: Renderer | AbstractRenderer) {
+function doesNeedResize(renderer: any, windowProperties: WindowProperties) {
   const canvas = renderer.view;
-  const width = window.innerWidth;
-  const height = window.innerHeight;
+  const width = windowProperties.innerWidth;
+  const height = windowProperties.innerHeight;
   const needResize = canvas.clientWidth !== width || canvas.clientHeight !== height;
 
   return needResize;
@@ -130,17 +128,17 @@ function getPositionOnTimeline(radius: number, total: number, part: number) {
   return { x, y, angle, radian };
 }
 
-function createPIXI(view: HTMLCanvasElement) {
+function createPIXI(view: HTMLCanvasElement, windowProperties: WindowProperties) {
   const app = new Application({
     view,
-    resizeTo: view,
+    // resizeTo: view,
     antialias: true,
     backgroundAlpha: 0,
-    autoDensity: true,
-    width: window.innerWidth,
-    height: window.innerHeight,
+    // autoDensity: true,
+    width: windowProperties.innerWidth,
+    height: windowProperties.innerHeight,
     powerPreference: "high-performance",
-    resolution: window.devicePixelRatio || 1,
+    resolution: windowProperties.devicePixelRatio || 1,
   });
 
   return app;
@@ -629,44 +627,100 @@ export class UI {
   updateUIParameters: ByStage<Parameters<UpdateUI>> = {};
   updateNotificationParameters: Parameters<UpdateNotification> = [null];
 
-  constructor(canvas: HTMLCanvasElement, radius: number, launch: LaunchWithData<Date>) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    radius: number,
+    launch: LaunchWithData<Date>,
+    windowProperties: WindowProperties
+  ) {
     this.radius = radius;
     this.launch = launch;
-    this.app = createPIXI(canvas);
+    this.app = createPIXI(canvas, windowProperties);
 
-    const resize = () => {
-      if (doesNeedResize(this.app.renderer)) {
-        this.app.ticker.remove(resize);
+    // const resize = () => {
+    //   if (doesNeedResize(this.app.renderer, windowProperties)) {
+    //     this.app.ticker.remove(resize);
 
-        // Reset
-        this.app.destroy();
-        this.stages = {};
+    //     // Reset
+    //     this.app.destroy();
+    //     this.stages = {};
 
-        // Restart
-        this.radius = Math.max(window.innerWidth, window.innerHeight) * 0.5;
-        this.app = createPIXI(canvas);
-        this.initialize();
-        this.updateNotification(...this.updateNotificationParameters);
-        if (this.updateUIParameters[1]) {
-          this.updateUI(...this.updateUIParameters[1]);
-        }
-        if (this.updateUIParameters[2]) {
-          this.updateUI(...this.updateUIParameters[2]);
-        }
-        this.app.ticker.add(resize);
-      }
-    };
+    //     // Restart
+    //     this.radius = Math.max(windowProperties.innerWidth, windowProperties.innerHeight) * 0.5;
+    //     this.app = createPIXI(canvas, windowProperties);
+    //     this.initialize();
+    //     this.updateNotification(...this.updateNotificationParameters);
+    //     if (this.updateUIParameters[1]) {
+    //       this.updateUI(...this.updateUIParameters[1]);
+    //     }
+    //     if (this.updateUIParameters[2]) {
+    //       this.updateUI(...this.updateUIParameters[2]);
+    //     }
+    //     this.app.ticker.add(resize);
+    //   }
+    // };
+
+    // setTimeout(() => {
+    //   const newWidth = 2904;
+    //   windowProperties = { ...windowProperties, innerWidth: newWidth };
+    //   // windowProperties.innerWidth = newWidth;
+    //   // this.radius = Math.max(, windowProperties.innerHeight) * 0.5;
+    //   // this.app.renderer.resize(2904, windowProperties.innerHeight);
+    //   // this.app.destroy();
+
+    //   // Reset
+    //   // this.app.destroy();
+    //   this.app.stage.removeChildren();
+    //   this.app.renderer.resize(2904, windowProperties.innerHeight);
+    //   this.stages = {};
+
+    //   // Restart
+    //   this.radius = Math.max(newWidth, windowProperties.innerHeight) * 0.5;
+    //   // this.app = createPIXI(canvas, windowProperties);
+    //   this.initialize();
+    //   this.updateNotification(...this.updateNotificationParameters);
+    //   if (this.updateUIParameters[1]) {
+    //     this.updateUI(...this.updateUIParameters[1]);
+    //   }
+    //   if (this.updateUIParameters[2]) {
+    //     this.updateUI(...this.updateUIParameters[2]);
+    //   }
+    // }, 5000);
 
     // Resize logic
-    this.app.ticker.add(resize);
+    // this.app.ticker.add(resize);
   }
 
-  public static async ofElement(canvas: HTMLCanvasElement, launch: LaunchWithData<Date>) {
+  public resize({ windowProperties }: { windowProperties: WindowProperties }) {
+    const { innerWidth, innerHeight } = windowProperties;
+    // Reset
+    this.app.stage.removeChildren();
+    this.app.renderer.resize(innerWidth, innerHeight);
+    this.stages = {};
+
+    // Restart
+    this.radius = Math.max(innerWidth, innerHeight) * 0.5;
+    this.initialize();
+    this.updateNotification(...this.updateNotificationParameters);
+    if (this.updateUIParameters[1]) {
+      this.updateUI(...this.updateUIParameters[1]);
+    }
+    if (this.updateUIParameters[2]) {
+      this.updateUI(...this.updateUIParameters[2]);
+    }
+  }
+
+  public static async ofElement(
+    canvas: HTMLCanvasElement,
+    windowProperties: WindowProperties,
+    launch: LaunchWithData<Date>
+  ) {
     await resourcesPromise;
     return new UI(
       canvas,
-      Math.max(window.innerWidth, window.innerHeight) * 0.5,
-      launch
+      Math.max(windowProperties.innerWidth, windowProperties.innerHeight) * 0.5,
+      launch,
+      windowProperties
     ).initialize();
   }
 

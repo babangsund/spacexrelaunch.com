@@ -1,6 +1,6 @@
 import { Easing, Tween } from "@tweenjs/tween.js";
 import * as TWEEN from "@tweenjs/tween.js";
-import { Ticker } from "pixi.js";
+import { Ticker } from "@pixi/webworker";
 
 type Callback<T> = (object: T) => void;
 
@@ -14,10 +14,7 @@ interface Animate<TValue, TTransitionValue> {
   onComplete?: Callback<TValue>;
 }
 
-export function animate<
-  TValue extends object,
-  TTransitionValue extends Partial<TValue>
->({
+export function animate<TValue extends object, TTransitionValue extends Partial<TValue>>({
   startValue,
   endValue,
   durationMs,

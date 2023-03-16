@@ -16,7 +16,6 @@ import {
   UniformsLib,
   TubeGeometry,
   AmbientLight,
-  TextureLoader,
   WebGLRenderer,
   SpriteMaterial,
   LoadingManager,
@@ -28,6 +27,8 @@ import {
   MeshBasicMaterial,
   SphereBufferGeometry,
   MeshStandardMaterial,
+  ImageBitmapLoader,
+  CanvasTexture,
 } from "three";
 
 import { Position, LaunchData, LaunchTelemetry } from "../../../data/launch";
@@ -35,6 +36,8 @@ import { Position, LaunchData, LaunchTelemetry } from "../../../data/launch";
 type DeferredLoader = () => void;
 
 export type UpdateVisual = (data: { stage: 1 | 2; altitude: number; position: Position }) => void;
+
+export type ResizeVisual = (windowProperties: WindowProperties) => void;
 
 const atmosphereVertexShader = `
 varying vec3 vertexNormal;
@@ -58,9 +61,14 @@ void main() {
 
 const radius = 100;
 
-function createRenderer(width: number, height: number, canvas: HTMLCanvasElement) {
+function createRenderer(
+  width: number,
+  height: number,
+  devicePixelRatio: number,
+  canvas: HTMLCanvasElement
+) {
   // Retina displays have such a high pixel density there is very little visual difference between having AA on/off.
-  const antialias = window.devicePixelRatio > 1 ? false : true;
+  const antialias = devicePixelRatio > 1 ? false : true;
 
   const renderer = new WebGLRenderer({
     canvas,
@@ -68,14 +76,14 @@ function createRenderer(width: number, height: number, canvas: HTMLCanvasElement
     powerPreference: "high-performance",
   });
 
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(width, height);
+  renderer.setPixelRatio(devicePixelRatio);
+  renderer.setSize(width, height, false);
   return renderer;
 }
 
-function createCamera() {
+function createCamera(windowProperties: WindowProperties) {
   const fov = 30;
-  const aspect = window.innerWidth / window.innerHeight; // 2; // the canvas default
+  const aspect = windowProperties.innerWidth / windowProperties.innerHeight; // 2; // the canvas default
   const near = 0.1;
   const far = 1500;
   const camera = new PerspectiveCamera(fov, aspect, near, far);
@@ -83,10 +91,10 @@ function createCamera() {
   return camera;
 }
 
-function doesNeedResize(renderer: Renderer) {
+function doesNeedResize(renderer: Renderer, windowProperties: WindowProperties) {
   const canvas = renderer.domElement;
-  const width = window.innerWidth;
-  const height = window.innerHeight;
+  const width = windowProperties.innerWidth;
+  const height = windowProperties.innerHeight;
   const needResize = canvas.clientWidth !== width || canvas.clientHeight !== height;
 
   return needResize;
@@ -103,13 +111,19 @@ function getPosition(lat: number, lon: number, radius: number) {
   return new Vector3(x, y, z);
 }
 
-async function addSkybox(scene: Scene, loader: TextureLoader, deferredLoaders: DeferredLoader[]) {
+async function addSkybox(
+  scene: Scene,
+  loader: ImageBitmapLoader,
+  deferredLoaders: DeferredLoader[]
+) {
   const sides = ["nz.png", "pz.png", "py.png", "ny.png", "px.png", "nx.png"];
 
   const materials: MeshBasicMaterial[] = [];
   for (let i = 0; i < sides.length; i++) {
     const side = sides[i];
-    const texture = await loader.loadAsync(`/images/stars-low-res/${side}`);
+    const texture = await loader
+      .loadAsync(`/images/stars-low-res/${side}`)
+      .then((image) => new CanvasTexture(image));
     materials.push(new MeshBasicMaterial({ map: texture, side: BackSide }));
   }
 
@@ -120,8 +134,8 @@ async function addSkybox(scene: Scene, loader: TextureLoader, deferredLoaders: D
 
   deferredLoaders.push(() => {
     sides.forEach((side, index) => {
-      loader.load(`/images/stars-high-res/${side}`, (texture) => {
-        materials[index].map = texture;
+      loader.load(`/images/stars-high-res/${side}`, (image) => {
+        materials[index].map = new CanvasTexture(image);
       });
     });
   });
@@ -131,12 +145,14 @@ async function addSkybox(scene: Scene, loader: TextureLoader, deferredLoaders: D
 
 async function addEarth(
   scene: Scene,
-  loader: TextureLoader,
+  loader: ImageBitmapLoader,
   sphereGeometry: SphereGeometry,
   deferredLoaders: DeferredLoader[]
 ) {
   const earthMaterial = new MeshStandardMaterial({
-    map: await loader.loadAsync("/images/earth-low-res.jpg"),
+    map: await loader
+      .loadAsync("/images/earth-low-res.jpg")
+      .then((image) => new CanvasTexture(image)),
     color: 0x191919,
   });
   const earth = new Mesh(sphereGeometry, earthMaterial);
@@ -144,8 +160,8 @@ async function addEarth(
   scene.add(earth);
 
   deferredLoaders.push(() => {
-    loader.load("/images/earth-high-res.png", (texture) => {
-      earthMaterial.map = texture;
+    loader.load("/images/earth-high-res.png", (image) => {
+      earthMaterial.map = new CanvasTexture(image);
     });
   });
 
@@ -179,17 +195,19 @@ function addAtmosphere(
   return atmosphere;
 }
 
-async function addRocketStage(scene: Scene, loader: TextureLoader, stage: 1 | 2) {
+async function addRocketStage(scene: Scene, loader: ImageBitmapLoader, stage: 1 | 2) {
   const rocketStage = new Sprite(
     new SpriteMaterial({
-      map: await loader.loadAsync(`/images/stage-${stage}.png`),
+      map: await loader
+        .loadAsync(`/images/stage-${stage}.png`)
+        .then((image) => new CanvasTexture(image)),
       color: 0xffffff,
       depthWrite: false,
     })
   );
 
-  loader.loadAsync(`/images/stage-${stage}.png`).then((texture) => {
-    const { width, height } = texture.image;
+  loader.loadAsync(`/images/stage-${stage}.png`).then((image) => {
+    const { width, height } = image;
     rocketStage.scale.set(width / 40, height / 40, 0);
   });
 
@@ -256,7 +274,11 @@ function createTextureLoader() {
     console.error("There was an error loading " + url);
   };
 
-  return new TextureLoader(manager);
+  const loader = new ImageBitmapLoader(manager);
+
+  loader.setOptions({ imageOrientation: "flipY" });
+
+  return loader;
 }
 
 function createLinearInterpolationCurve(
@@ -319,14 +341,22 @@ function addPath(
   return path;
 }
 
+type WindowProperties = Pick<Window, "innerWidth" | "innerHeight" | "devicePixelRatio">;
+
 export async function makeVisual(
   canvas: HTMLCanvasElement,
   launch: LaunchData<Date>,
-  altitudeScale: ScaleLinear<number, number>
-) {
-  const renderer = createRenderer(window.innerWidth, window.innerHeight, canvas);
+  altitudeScale: ScaleLinear<number, number>,
+  windowProperties: WindowProperties
+): Promise<[UpdateVisual, ResizeVisual]> {
+  const renderer = createRenderer(
+    windowProperties.innerWidth,
+    windowProperties.innerHeight,
+    windowProperties.devicePixelRatio,
+    canvas
+  );
 
-  const camera = createCamera();
+  const camera = createCamera(windowProperties);
   const loader = createTextureLoader();
   const deferredLoaders: DeferredLoader[] = [];
 
@@ -381,11 +411,11 @@ export async function makeVisual(
   }, 1000 * 60); // Every minute
 
   function render() {
-    if (doesNeedResize(renderer)) {
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-    }
+    // if (doesNeedResize(renderer, windowProperties)) {
+    //   renderer.setSize(windowProperties.innerWidth, windowProperties.innerHeight, false);
+    //   camera.aspect = windowProperties.innerWidth / windowProperties.innerHeight;
+    //   camera.updateProjectionMatrix();
+    // }
 
     renderer.render(scene, camera);
 
@@ -417,5 +447,13 @@ export async function makeVisual(
 
   deferredLoaders.forEach((l) => l());
 
-  return update;
+  const resize: ResizeVisual = (windowProperties) => {
+    if (doesNeedResize(renderer, windowProperties)) {
+      renderer.setSize(windowProperties.innerWidth, windowProperties.innerHeight, false);
+      camera.aspect = windowProperties.innerWidth / windowProperties.innerHeight;
+      camera.updateProjectionMatrix();
+    }
+  };
+
+  return [update, resize];
 }

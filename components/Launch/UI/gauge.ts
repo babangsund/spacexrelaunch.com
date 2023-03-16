@@ -1,4 +1,4 @@
-import { Sprite, Graphics, Container, BitmapText } from "pixi.js";
+import { Sprite, Graphics, Container, BitmapText } from "@pixi/webworker";
 
 import { animate } from "./animate";
 import { toRadians, convertRelativeScale } from "../../utils";

@@ -1,7 +1,5 @@
 import React from "react";
 import add from "date-fns/add";
-import { extent } from "d3-array";
-import { scaleLinear } from "d3-scale";
 import { geoInterpolate } from "d3-geo";
 import { interpolateNumber } from "d3-interpolate";
 import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
@@ -9,7 +7,6 @@ import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 import styles from "./Launch.module.css";
 import { endPageTransition } from "../transitionPage";
 import { UI } from "./UI";
-import { makeVisual, UpdateVisual } from "./visualization";
 import { LaunchWithData, Position } from "../../data/launch";
 
 interface LaunchProps {
@@ -18,7 +15,7 @@ interface LaunchProps {
   launch: LaunchWithData<Date>;
 }
 
-type Stage = 1 | 2;
+export type Stage = 1 | 2;
 
 interface StageSimulator {
   isDone: boolean;
@@ -41,7 +38,8 @@ const Launch = React.memo(function Launch({ launch, isPlaying, playbackRate }: L
   const threeCanvasRef = React.useRef<HTMLCanvasElement>(null);
 
   const ui = React.useRef<UI>();
-  const onVisualChange = React.useRef<UpdateVisual>(() => {});
+  const visualWorker = React.useRef<Worker | null>(null);
+  const uiWorker = React.useRef<Worker | null>(null);
 
   const date = React.useRef(data.liftoffTime);
   const interval = React.useRef<NodeJS.Timer>();
@@ -87,14 +85,22 @@ const Launch = React.memo(function Launch({ launch, isPlaying, playbackRate }: L
 
       if (notification.current.endsAt) {
         if (date.current >= notification.current.endsAt) {
-          ui.current?.updateNotification(null);
+          uiWorker.current?.postMessage({
+            type: "updateNotification",
+            updateNotification: null,
+          });
+          // ui.current?.updateNotification(null);
           notification.current.endsAt = new Date();
         }
       }
 
       if (date.current >= notification.current.startsAt) {
         // 1. Remove possibly existing notifications from UI
-        ui.current?.updateNotification(null);
+        // ui.current?.updateNotification(null);
+        uiWorker.current?.postMessage({
+          type: "updateNotification",
+          updateNotification: null,
+        });
         // 2. Add notification to UI
         const newIndex = notification.current.index;
         const newNotification = launch.data.notifications[newIndex];
@@ -107,6 +113,10 @@ const Launch = React.memo(function Launch({ launch, isPlaying, playbackRate }: L
         };
         setTimeout(() => {
           ui.current?.updateNotification(newNotification);
+          uiWorker.current?.postMessage({
+            type: "updateNotification",
+            updateNotification: null,
+          });
         }, 200 / playbackRate);
       }
 
@@ -135,12 +145,14 @@ const Launch = React.memo(function Launch({ launch, isPlaying, playbackRate }: L
           if (!nextCheckpoint) {
             stageData.isDone = true;
 
-            onVisualChange.current({
+            visualWorker.current?.postMessage({
+              type: "update",
               stage,
               altitude: checkpoint.altitude,
               position: checkpoint.position,
             });
-            ui.current?.updateUI({
+            uiWorker.current?.postMessage({
+              type: "updateUI",
               stage,
               date: date.current,
               speed: checkpoint.speed,
@@ -177,13 +189,14 @@ const Launch = React.memo(function Launch({ launch, isPlaying, playbackRate }: L
         const altitude = stageData.waypointInterpolators.altitude(delta);
         const speed = Math.round(stageData.waypointInterpolators.speed(delta));
 
-        onVisualChange.current({
+        visualWorker.current?.postMessage({
+          type: "update",
           stage,
           altitude,
           position: position.slice().reverse() as Position,
         });
-
-        ui.current?.updateUI({
+        uiWorker.current?.postMessage({
+          type: "updateUI",
           stage,
           date: date.current,
           speed,
@@ -204,7 +217,6 @@ const Launch = React.memo(function Launch({ launch, isPlaying, playbackRate }: L
 
   React.useEffect(() => {
     return () => {
-      ui.current?.app.destroy();
       if (interval.current) {
         clearInterval(interval.current);
       }
@@ -212,23 +224,64 @@ const Launch = React.memo(function Launch({ launch, isPlaying, playbackRate }: L
   }, []);
 
   React.useEffect(() => {
-    async function initialize() {
-      const altitudeScale = scaleLinear()
-        .domain(
-          extent(data.telemetry.stage[1].concat(data.telemetry.stage[2]), (t) => t.altitude) as [
-            number,
-            number
-          ]
-        )
-        .range([0, 5]);
+    const resize = () => {
+      requestAnimationFrame(() => {
+        uiWorker.current?.postMessage({
+          type: "resize",
+          windowProperties: {
+            innerWidth: window.innerWidth,
+            innerHeight: window.innerHeight,
+            devicePixelRatio: window.devicePixelRatio,
+          },
+        });
+        visualWorker.current?.postMessage({
+          type: "resize",
+          windowProperties: {
+            innerWidth: window.innerWidth,
+            innerHeight: window.innerHeight,
+            devicePixelRatio: window.devicePixelRatio,
+          },
+        });
+      });
+    };
 
-      onVisualChange.current = await makeVisual(
-        threeCanvasRef.current as HTMLCanvasElement,
-        data,
-        altitudeScale
+    async function initialize() {
+      // @ts-ignore
+      const offscreen = threeCanvasRef.current.transferControlToOffscreen();
+      visualWorker.current = new Worker(new URL("./visualization.worker.ts", import.meta.url));
+      visualWorker.current.postMessage(
+        {
+          type: "init",
+          canvas: offscreen,
+          data,
+          windowProperties: {
+            devicePixelRatio: window.devicePixelRatio,
+            innerWidth: window.innerWidth,
+            innerHeight: window.innerHeight,
+          },
+        },
+        [offscreen]
       );
 
-      ui.current = await UI.ofElement(pixiCanvasRef.current as HTMLCanvasElement, launch);
+      // ui.current = await UI.ofElement(pixiCanvasRef.current as HTMLCanvasElement, launch);
+      // @ts-ignore
+      const offscreenUI = pixiCanvasRef.current.transferControlToOffscreen();
+      uiWorker.current = new Worker(new URL("./ui.worker.ts", import.meta.url));
+      uiWorker.current.postMessage(
+        {
+          type: "init",
+          launch,
+          canvas: offscreenUI,
+          windowProperties: {
+            innerWidth: window.innerWidth,
+            innerHeight: window.innerHeight,
+            devicePixelRatio: window.devicePixelRatio,
+          },
+        },
+        [offscreenUI]
+      );
+
+      window.addEventListener("resize", resize);
 
       setTimeout(() => {
         requestAnimationFrame(() => {
@@ -240,6 +293,7 @@ const Launch = React.memo(function Launch({ launch, isPlaying, playbackRate }: L
     initialize();
 
     return () => {
+      window.removeEventListener("resize", resize);
       if (interval.current) {
         clearInterval(interval.current);
       }
