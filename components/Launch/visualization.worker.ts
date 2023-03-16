@@ -9,50 +9,52 @@ let altitudeScale: ScaleLinear<number, number, never>,
   resize: ResizeVisual;
 
 interface VisualizationWorkerMessage {
-  type: "init" | "update" | "resize";
+  type: "vis::init" | "vis::update" | "vis::resize";
   canvas: HTMLCanvasElement;
   data: LaunchData<Date>;
   windowProperties: Pick<Window, "innerHeight" | "innerWidth" | "devicePixelRatio">;
   stage: Stage;
   altitude: number;
   position: Position;
+  channel: MessagePort;
 }
 
 self.onmessage = async (event: MessageEvent<VisualizationWorkerMessage>) => {
-  const { type, canvas, data, windowProperties, stage, altitude, position } = event.data;
+  if (event.data.type === "vis::init") {
+    altitudeScale = scaleLinear()
+      .domain(
+        // @ts-ignore
+        extent(
+          event.data.data.telemetry.stage[1].concat(event.data.data.telemetry.stage[2]),
+          (t: any) => t.altitude
+        ) as [number, number]
+      )
+      .range([0, 5]) as any;
 
-  // write a case for every type
-  switch (type) {
-    case "init": {
-      altitudeScale = scaleLinear()
-        .domain(
-          // @ts-ignore
-          extent(
-            data.telemetry.stage[1].concat(data.telemetry.stage[2]),
-            (t: any) => t.altitude
-          ) as [number, number]
-        )
-        .range([0, 5]) as any;
+    // @ts-ignore
+    [updateVisual, resize] = await makeVisual(
+      event.data.canvas as HTMLCanvasElement,
+      event.data.data,
+      altitudeScale,
+      event.data.windowProperties
+    );
 
-      // @ts-ignore
-      [updateVisual, resize] = await makeVisual(
-        canvas as HTMLCanvasElement,
-        data,
-        altitudeScale,
-        windowProperties
-      );
-      break;
-    }
-    case "update": {
-      updateVisual({ stage, altitude, position });
-      break;
-    }
-    case "resize": {
-      resize(windowProperties);
-      break;
-    }
-    default:
-      break;
+    event.data.channel.onmessage = (event: MessageEvent<VisualizationWorkerMessage>) => {
+      const { type, canvas, data, windowProperties, stage, altitude, position } = event.data;
+      // write a case for every type
+      switch (type) {
+        case "vis::update": {
+          updateVisual({ stage, altitude, position });
+          break;
+        }
+        case "vis::resize":
+        case "vis::init":
+        default:
+          break;
+      }
+    };
+  } else if (event.data.type === "vis::resize") {
+    resize(event.data.windowProperties);
   }
 };
 

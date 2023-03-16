@@ -5,7 +5,7 @@ import { UI, UpdateNotification } from "./UI";
 let ui: UI;
 
 interface VisualizationWorkerMessage {
-  type: "init" | "updateNotification" | "updateUI" | "resize";
+  type: "ui::init" | "ui::updateNotification" | "ui::update" | "ui::resize";
   canvas: HTMLCanvasElement;
   windowProperties: Pick<Window, "innerHeight" | "innerWidth" | "devicePixelRatio">;
   launch: LaunchWithData<Date>;
@@ -18,36 +18,35 @@ interface VisualizationWorkerMessage {
 
   // Notification
   updateNotification: null | LaunchNotification<Date>;
+
+  channel: MessagePort;
 }
 
 self.onmessage = async (event: MessageEvent<VisualizationWorkerMessage>) => {
-  const {
-    windowProperties,
-    type,
-    date,
-    stage,
-    speed,
-    canvas,
-    launch,
-    altitude,
-    updateNotification,
-  } = event.data;
+  const { canvas, launch, windowProperties } = event.data;
 
-  switch (type) {
-    case "init":
-      ui = await UI.ofElement(canvas, windowProperties, launch);
-      break;
-    case "updateNotification":
-      ui.updateNotification(updateNotification);
-      break;
-    case "updateUI":
-      ui.updateUI({ stage, date, speed, altitude });
-      break;
-    case "resize":
-      ui.resize({ windowProperties });
-      break;
-    default:
-      break;
+  if (event.data.type === "ui::init") {
+    ui = await UI.ofElement(canvas, windowProperties, launch);
+
+    event.data.channel.onmessage = async (event: MessageEvent<VisualizationWorkerMessage>) => {
+      const { type, date, stage, speed, altitude, windowProperties, updateNotification } =
+        event.data;
+
+      switch (type) {
+        case "ui::updateNotification":
+          ui.updateNotification(updateNotification);
+          break;
+        case "ui::update":
+          ui.updateUI({ stage, date, speed, altitude });
+          break;
+        case "ui::init":
+        case "ui::resize":
+        default:
+          break;
+      }
+    };
+  } else if (event.data.type === "ui::resize") {
+    ui.resize({ windowProperties });
   }
 };
 
