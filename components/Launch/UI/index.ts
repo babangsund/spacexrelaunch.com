@@ -69,8 +69,8 @@ function loadBitmapFonts() {
   );
 }
 
-Assets.add("BlenderPro500", "/fonts/BlenderPro500.woff2");
-Assets.add("BlenderPro700", "/fonts/BlenderPro700.woff2");
+Assets.add("BlenderPro500", "/fonts/BlenderPro/BlenderPro-Medium.woff2");
+Assets.add("BlenderPro700", "/fonts/BlenderPro/BlenderPro-Bold.woff2");
 
 const fontsPromise = Promise.all([Assets.load(["BlenderPro500", "BlenderPro700"])]).then(
   loadBitmapFonts
